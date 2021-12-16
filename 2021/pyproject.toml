@@ -1,0 +1,43 @@
+[tool.poetry]
+name = "advent-of-code-2021"
+version = "0.1.0"
+description = ""
+authors = ["DarkAce65 <tvdood99@gmail.com>"]
+
+[tool.isort]
+profile = "black"
+src_paths = ["*.py"]
+
+[tool.black]
+line-length = 90
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.mypy_cache
+  | \.venv
+)/
+'''
+
+[tool.taskipy.tasks]
+pre_format = "isort ."
+format = "black ."
+pre_lint = "task format"
+lint = "task lint_mypy"
+lint_mypy = "mypy *.py"
+pre_run = "task lint"
+run = "python"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+
+[tool.poetry.dev-dependencies]
+black = "^21.12b0"
+isort = "^5.10.1"
+mypy = "^0.910"
+taskipy = "^1.9.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
