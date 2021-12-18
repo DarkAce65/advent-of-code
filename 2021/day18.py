@@ -2,6 +2,7 @@ import json
 import math
 import re
 from pathlib import Path
+from typing import Any
 
 
 def reduce_number(snailfish_number: str) -> str:
@@ -71,14 +72,23 @@ def add_numbers(snailfish_number1: str, snailfish_number2: str) -> str:
     return reduce_number("[" + snailfish_number1 + "," + snailfish_number2 + "]")
 
 
+def compute_magnitude(parsed_snailfish_number: Any) -> int:
+    if isinstance(parsed_snailfish_number, list):
+        return 3 * compute_magnitude(parsed_snailfish_number[0]) + 2 * compute_magnitude(
+            parsed_snailfish_number[1]
+        )
+    elif isinstance(parsed_snailfish_number, int):
+        return int(parsed_snailfish_number)
+
+    return 0
+
+
 def part_one(snailfish_numbers: list[str]) -> int:
     snailfish_number = snailfish_numbers[0]
     for s in snailfish_numbers[1:]:
-        print("  " + snailfish_number, s, sep="\n+ ")
         snailfish_number = add_numbers(snailfish_number, s)
-        print("= " + snailfish_number)
 
-    return 0
+    return compute_magnitude(json.loads(snailfish_number))
 
 
 def part_two(snailfish_numbers: list[str]) -> int:
