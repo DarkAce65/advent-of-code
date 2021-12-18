@@ -80,7 +80,7 @@ def compute_magnitude(parsed_snailfish_number: Any) -> int:
     elif isinstance(parsed_snailfish_number, int):
         return int(parsed_snailfish_number)
 
-    return 0
+    raise ValueError("Malformed snailfish number")
 
 
 def part_one(snailfish_numbers: list[str]) -> int:
@@ -92,7 +92,19 @@ def part_one(snailfish_numbers: list[str]) -> int:
 
 
 def part_two(snailfish_numbers: list[str]) -> int:
-    pass
+    largest_magnitude = 0
+    for index in range(len(snailfish_numbers)):
+        for other_index in range(len(snailfish_numbers)):
+            if index == other_index:
+                continue
+
+            num = snailfish_numbers[index]
+            other = snailfish_numbers[other_index]
+            magnitude = compute_magnitude(json.loads(add_numbers(num, other)))
+            if magnitude > largest_magnitude:
+                largest_magnitude = magnitude
+
+    return largest_magnitude
 
 
 if __name__ == "__main__":
