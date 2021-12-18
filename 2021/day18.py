@@ -52,29 +52,17 @@ def reduce_number(snailfish_number: str) -> str:
 
         index += 1
 
-    index = 0
-    buffer = ""
-    while index < len(snailfish_number):
-        c = snailfish_number[index]
-        if c.isdecimal():
-            buffer += c
-        else:
-            if len(buffer) > 0 and int(buffer) >= 10:
-                return reduce_number(
-                    snailfish_number.replace(
-                        buffer,
-                        "["
-                        + str(math.floor(int(buffer) / 2))
-                        + ","
-                        + str(math.ceil(int(buffer) / 2))
-                        + "]",
-                        1,
-                    )
-                )
-
-            buffer = ""
-
-        index += 1
+    split_match = re.search(r"\d{2,}", snailfish_number)
+    if split_match is not None:
+        return reduce_number(
+            snailfish_number[: split_match.start(0)]
+            + "["
+            + str(math.floor(int(split_match.group(0)) / 2))
+            + ","
+            + str(math.ceil(int(split_match.group(0)) / 2))
+            + "]"
+            + snailfish_number[split_match.end(0) :]
+        )
 
     return snailfish_number
 
