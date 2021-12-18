@@ -1,5 +1,4 @@
 import math
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
@@ -11,12 +10,6 @@ def sign(a: int) -> int:
 def is_perfect_square(a: int) -> bool:
     root = int(math.sqrt(a))
     return root ** 2 == a
-
-
-@dataclass
-class Vector2:
-    x: int
-    y: int
 
 
 def parse_target_area(input_str: str) -> tuple[tuple[int, int], tuple[int, int]]:
@@ -31,12 +24,11 @@ def parse_target_area(input_str: str) -> tuple[tuple[int, int], tuple[int, int]]
     )
 
 
-def compute_position(initial_velocity: Vector2, num_steps: int) -> Vector2:
-    (vx, vy) = (initial_velocity.x, initial_velocity.y)
+def compute_position(vx: int, vy: int, num_steps: int) -> tuple[int, int]:
     x = int(min(num_steps, abs(vx)) * (vx - sign(vx) * (min(num_steps, abs(vx)) - 1) / 2))
     y = int(num_steps * (vy - (num_steps - 1) / 2))
 
-    return Vector2(x, y)
+    return (x, y)
 
 
 def get_y_candidates(min_y: int, max_y: int) -> list[tuple[int, int]]:
@@ -59,7 +51,7 @@ def get_y_candidates(min_y: int, max_y: int) -> list[tuple[int, int]]:
 
 def get_tail_x_candidate(min_x: int, max_x: int, target_steps: int) -> Optional[int]:
     triangles = set()
-    for x in range(min_x, max_x):
+    for x in range(min_x, max_x + 1):
         if is_perfect_square(8 * abs(x) + 1):
             triangles.add(x)
 
@@ -72,7 +64,7 @@ def get_tail_x_candidate(min_x: int, max_x: int, target_steps: int) -> Optional[
     )
 
     if len(x_candidates) == 0:
-        None
+        return None
 
     return x_candidates[0]
 
@@ -87,21 +79,40 @@ def part_one(target_area: tuple[tuple[int, int], tuple[int, int]]) -> int:
     for (y_candidate, steps) in y_candidates:
         x_candidate = get_tail_x_candidate(min_x, max_x, steps)
         if x_candidate is not None:
-            velocity = Vector2(x_candidate, y_candidate)
+            velocity = (x_candidate, y_candidate)
             target_steps = steps
             break
 
     if velocity is None or target_steps is None:
         raise ValueError("No trajectory found")
 
-    return int(
-        min(target_steps, abs(velocity.y))
-        * (velocity.y - (min(target_steps, abs(velocity.y)) - 1) / 2)
-    )
+    (_, vy) = velocity
+    return int(min(target_steps, abs(vy)) * (vy - (min(target_steps, abs(vy)) - 1) / 2))
+
+
+def get_x_values(min_x: int, max_x: int, y: int, steps: int) -> list[int]:
+    x_candidates = []
+
+    for x in range(max_x + 1):
+        (pos_x, _) = compute_position(x, y, steps)
+        if min_x <= pos_x and pos_x <= max_x:
+            x_candidates.append(x)
+
+    return x_candidates
 
 
 def part_two(target_area: tuple[tuple[int, int], tuple[int, int]]) -> int:
-    pass
+    ((min_x, max_x), (min_y, max_y)) = target_area
+
+    velocities = set()
+
+    y_candidates = get_y_candidates(min_y, max_y)
+    for (y_candidate, steps) in y_candidates:
+        x_candidates = get_x_values(min_x, max_x, y_candidate, steps)
+        for x in x_candidates:
+            velocities.add((x, y_candidate))
+
+    return len(velocities)
 
 
 if __name__ == "__main__":
