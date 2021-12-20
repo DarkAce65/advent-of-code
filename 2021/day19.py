@@ -238,6 +238,7 @@ def part_one(scanner_report: list[Scanner]) -> int:
             )
             if offset_orientation is not None:
                 (offset, orientation) = offset_orientation
+                print(scanner.number, offset, orientation)
                 scanner_positions[scanner.number] = (
                     known_scanner_offset + offset,
                     orientation,
@@ -252,16 +253,22 @@ def part_one(scanner_report: list[Scanner]) -> int:
             if scanner.number in last_unplaceable_length and last_unplaceable_length[
                 scanner.number
             ] == len(unknown_scanners):
-                print(scanner_positions)
                 raise ValueError(
                     f"Unable to locate scanners: {sorted(s.number for s in unknown_scanners)}"
                 )
             last_unplaceable_length[scanner.number] = len(unknown_scanners)
 
-    for k, v in sorted(scanner_positions.items()):
-        print(k, v)
+    all_beacons: set[Vector3] = set()
+    for (
+        scanner_number,
+        (scanner_position, scanner_orientation),
+    ) in scanner_positions.items():
+        for world_beacon in known_scanners[scanner_number].get_world_transformed_beacons(
+            scanner_orientation
+        ):
+            all_beacons.add(world_beacon + scanner_position)
 
-    return 0
+    return len(all_beacons)
 
 
 def part_two(scanner_report: list[Scanner]) -> int:
