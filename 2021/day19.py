@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import deque
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
@@ -77,13 +78,28 @@ def part_one(scanner_report: list[Scanner]) -> int:
     scanner_positions[scanner_report[0].number] = Vector3(0, 0, 0)
     known_scanners[scanner_report[0].number] = scanner_report[0]
 
-    for scanner in scanner_report[1:]:
+    unknown_scanners = deque(scanner_report[1:])
+    last_unplaceable_length: dict[int, int] = {}
+    while len(unknown_scanners) > 0:
+        scanner = unknown_scanners.popleft()
         for known_scanner in known_scanners.values():
             offset = find_offset(known_scanner, scanner, 3)
             if offset is not None:
                 scanner_positions[scanner.number] = offset
                 known_scanners[scanner.number] = scanner
+                if scanner.number in last_unplaceable_length:
+                    del last_unplaceable_length[scanner.number]
                 break
+
+        if scanner.number not in known_scanners:
+            unknown_scanners.append(scanner)
+            if scanner.number in last_unplaceable_length and last_unplaceable_length[
+                scanner.number
+            ] == len(unknown_scanners):
+                raise ValueError(
+                    f"Unable to locate scanners: {sorted(s.number for s in unknown_scanners)}"
+                )
+            last_unplaceable_length[scanner.number] = len(unknown_scanners)
 
     print(scanner_positions)
 
