@@ -103,7 +103,8 @@ def part_one(scanner_report: list[Scanner]) -> int:
                 )
             last_unplaceable_length[scanner.number] = len(unknown_scanners)
 
-    print(scanner_positions)
+    for k, v in sorted(scanner_positions.items()):
+        print(k, v)
 
     return 0
 
