@@ -85,7 +85,9 @@ def part_one(scanner_report: list[Scanner]) -> int:
         for known_scanner in known_scanners.values():
             offset = find_offset(known_scanner, scanner, 3)
             if offset is not None:
-                scanner_positions[scanner.number] = offset
+                scanner_positions[scanner.number] = (
+                    scanner_positions[known_scanner.number] + offset
+                )
                 known_scanners[scanner.number] = scanner
                 if scanner.number in last_unplaceable_length:
                     del last_unplaceable_length[scanner.number]
