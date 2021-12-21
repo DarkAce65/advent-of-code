@@ -234,7 +234,7 @@ def part_one(scanner_report: list[Scanner]) -> int:
             offset_orientation = find_offset_and_orientation(
                 known_scanner.get_world_transformed_beacons(known_scanner_orientation),
                 scanner,
-                3,
+                12,
             )
             if offset_orientation is not None:
                 (offset, orientation) = offset_orientation
