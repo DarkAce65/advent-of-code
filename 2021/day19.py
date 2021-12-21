@@ -132,9 +132,9 @@ class Vector3:
                         return Vector3(-z, x, -y)
                 else:
                     if up.is_positive():
-                        return Vector3(-z, -x, -y)
+                        return Vector3(-z, -x, y)
                     else:
-                        return Vector3(z, -x, y)
+                        return Vector3(z, -x, -y)
         elif forward.is_z():
             if up.is_x():
                 if forward.is_positive():
