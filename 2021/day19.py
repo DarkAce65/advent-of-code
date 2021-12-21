@@ -238,7 +238,11 @@ def part_one(scanner_report: list[Scanner]) -> int:
             )
             if offset_orientation is not None:
                 (offset, orientation) = offset_orientation
-                print(scanner.number, offset, orientation)
+                print(
+                    f"{known_scanner.number}<-{scanner.number}",
+                    known_scanner_offset + offset,
+                    orientation,
+                )
                 scanner_positions[scanner.number] = (
                     known_scanner_offset + offset,
                     orientation,
