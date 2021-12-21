@@ -82,6 +82,9 @@ class Vector3:
     def __sub__(self, other: Vector3) -> Vector3:
         return Vector3(self.x - other.x, self.y - other.y, self.z - other.z)
 
+    def abs(self) -> Vector3:
+        return Vector3(abs(self.x), abs(self.y), abs(self.z))
+
     def transform(self, orientation: Orientation) -> Vector3:
         x = self.x
         y = self.y
@@ -281,8 +284,19 @@ def part_one(beacons: set[Vector3]) -> int:
     return len(beacons)
 
 
-def part_two(scanner_report: list[Scanner]) -> int:
-    pass
+def part_two(scanner_positions: dict[int, tuple[Vector3, Orientation]]) -> int:
+    farthest_distance = 0
+    for (scanner_num1, (scanner_position1, _)) in scanner_positions.items():
+        for (scanner_num2, (scanner_position2, _)) in scanner_positions.items():
+            if scanner_num1 == scanner_num2:
+                continue
+
+            diff = (scanner_position1 - scanner_position2).abs()
+            distance = diff.x + diff.y + diff.z
+            if farthest_distance < distance:
+                farthest_distance = distance
+
+    return farthest_distance
 
 
 if __name__ == "__main__":
@@ -293,3 +307,4 @@ if __name__ == "__main__":
     (scanner_positions, beacons) = find_scanner_locations_and_all_beacons(scanner_report)
 
     print("Part One: ", part_one(beacons))
+    print("Part Two: ", part_two(scanner_positions))
