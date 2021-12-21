@@ -217,7 +217,9 @@ def find_offset_and_orientation(
     return None
 
 
-def part_one(scanner_report: list[Scanner]) -> int:
+def find_scanner_locations_and_all_beacons(
+    scanner_report: list[Scanner],
+) -> tuple[dict[int, tuple[Vector3, Orientation]], set[Vector3]]:
     scanner_positions: dict[int, tuple[Vector3, Orientation]] = {}
     known_scanners: dict[int, Scanner] = {}
     scanner_positions[scanner_report[0].number] = (Vector3(0, 0, 0), DEFAULT_ORIENTATION)
@@ -272,7 +274,11 @@ def part_one(scanner_report: list[Scanner]) -> int:
         ):
             all_beacons.add(world_beacon + scanner_position)
 
-    return len(all_beacons)
+    return (scanner_positions, all_beacons)
+
+
+def part_one(beacons: set[Vector3]) -> int:
+    return len(beacons)
 
 
 def part_two(scanner_report: list[Scanner]) -> int:
@@ -284,6 +290,6 @@ if __name__ == "__main__":
         problem_input = [line.rstrip() for line in file]
 
     scanner_report = parse_scanner_report(problem_input)
+    (scanner_positions, beacons) = find_scanner_locations_and_all_beacons(scanner_report)
 
-    print("Part One: ", part_one(scanner_report))
-    print("Part Two: ", part_two(scanner_report))
+    print("Part One: ", part_one(beacons))
