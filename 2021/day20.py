@@ -102,8 +102,18 @@ def part_one(image_enhancement_algorithm: str, input_image: list[str]) -> int:
     return len(image.lit_pixels)
 
 
-def part_two(problem_input: list[str]) -> int:
-    pass
+def part_two(image_enhancement_algorithm: str, input_image: list[str]) -> int:
+    lit_pixels: set[tuple[int, int]] = set()
+    for row in range(len(input_image)):
+        for col in range(len(input_image[row])):
+            if input_image[row][col] == "#":
+                lit_pixels.add((row, col))
+
+    image = InfiniteImage(lit_pixels)
+    for _ in range(50):
+        image = enhance_image(image_enhancement_algorithm, image)
+
+    return len(image.lit_pixels)
 
 
 if __name__ == "__main__":
@@ -114,4 +124,4 @@ if __name__ == "__main__":
     input_image = list(filter(None, problem_input[1:]))
 
     print("Part One: ", part_one(image_enhancement_algorithm, input_image))
-    print("Part Two: ", part_two(problem_input))
+    print("Part Two: ", part_two(image_enhancement_algorithm, input_image))
