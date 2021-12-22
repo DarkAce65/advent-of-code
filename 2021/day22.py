@@ -24,10 +24,24 @@ def parse_instructions(problem_input: list[str]) -> list[Instruction]:
 
 
 def part_one(instructions: list[Instruction]) -> int:
-    for i in instructions:
-        print(i)
+    enabled_cubes: set[tuple[int, int, int]] = set()
+    for (should_enable, x_bounds, y_bounds, z_bounds) in instructions:
+        for x in range(x_bounds[0], x_bounds[1] + 1):
+            if x < -50 or 50 < x:
+                continue
+            for y in range(y_bounds[0], y_bounds[1] + 1):
+                if y < -50 or 50 < y:
+                    continue
+                for z in range(z_bounds[0], z_bounds[1] + 1):
+                    if z < -50 or 50 < z:
+                        continue
+                    if should_enable:
+                        enabled_cubes.add((x, y, z))
+                    else:
+                        if (x, y, z) in enabled_cubes:
+                            enabled_cubes.remove((x, y, z))
 
-    return 0
+    return len(enabled_cubes)
 
 
 def part_two(instructions: list[Instruction]) -> int:
