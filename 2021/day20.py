@@ -16,9 +16,6 @@ class InfiniteImage:
     def load_image(self, lit_pixels: set[tuple[int, int]]) -> None:
         self.lit_pixels = lit_pixels.copy()
 
-    def set_background_lit(self, is_background_lit: bool) -> None:
-        self.is_background_lit = is_background_lit
-
     def is_pixel_lit(self, row: int, col: int) -> bool:
         if (
             row < self.row_bounds[0]
@@ -81,10 +78,10 @@ def enhance_image(
             if image_enhancement_algorithm[int(enhancement_index, 2)] == "#":
                 enhanced_image.light_pixel(row, col)
 
-    if enhanced_image.is_background_lit and image_enhancement_algorithm[255] == ".":
-        enhanced_image.set_background_lit(False)
-    elif not enhanced_image.is_background_lit and image_enhancement_algorithm[0] == "#":
-        enhanced_image.set_background_lit(True)
+    if image.is_background_lit and image_enhancement_algorithm[511] == ".":
+        enhanced_image.is_background_lit = False
+    elif not image.is_background_lit and image_enhancement_algorithm[0] == "#":
+        enhanced_image.is_background_lit = True
 
     enhanced_image.compute_bounds()
 
