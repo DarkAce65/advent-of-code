@@ -1,6 +1,23 @@
 from pathlib import Path
 
-Instruction = tuple[bool, tuple[int, int], tuple[int, int], tuple[int, int]]
+
+class Cuboid:
+    x_bounds: tuple[int, int]
+    y_bounds: tuple[int, int]
+    z_bounds: tuple[int, int]
+
+    def __init__(
+        self,
+        x_bounds: tuple[int, int],
+        y_bounds: tuple[int, int],
+        z_bounds: tuple[int, int],
+    ) -> None:
+        self.x_bounds = x_bounds
+        self.y_bounds = y_bounds
+        self.z_bounds = z_bounds
+
+
+Instruction = tuple[bool, Cuboid]
 
 
 def clamp(num: int, low: int, high: int) -> int:
@@ -18,9 +35,7 @@ def parse_instructions(problem_input: list[str]) -> list[Instruction]:
         instructions.append(
             (
                 True if state == "on" else False,
-                (x_low, x_high),
-                (y_low, y_high),
-                (z_low, z_high),
+                Cuboid((x_low, x_high), (y_low, y_high), (z_low, z_high)),
             )
         )
 
@@ -29,7 +44,10 @@ def parse_instructions(problem_input: list[str]) -> list[Instruction]:
 
 def part_one(instructions: list[Instruction]) -> int:
     enabled_cubes: set[tuple[int, int, int]] = set()
-    for (should_enable, x_bounds, y_bounds, z_bounds) in instructions:
+    for (should_enable, cuboid) in instructions:
+        x_bounds = cuboid.x_bounds
+        y_bounds = cuboid.y_bounds
+        z_bounds = cuboid.z_bounds
         if (
             x_bounds[1] < -50
             or 50 < x_bounds[0]
