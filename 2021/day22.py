@@ -111,26 +111,26 @@ def parse_instructions(problem_input: Iterable[str]) -> list[Instruction]:
 def part_one(instructions: list[Instruction]) -> int:
     enabled_cubes: set[tuple[int, int, int]] = set()
     for (should_enable, cuboid) in instructions:
-        x_bounds = cuboid.x_bounds
-        y_bounds = cuboid.y_bounds
-        z_bounds = cuboid.z_bounds
+        (x_low, x_high) = cuboid.x_bounds
+        (y_low, y_high) = cuboid.y_bounds
+        (z_low, z_high) = cuboid.z_bounds
         if (
-            x_bounds[1] < -50
-            or 50 < x_bounds[0]
-            or y_bounds[1] < -50
-            or 50 < y_bounds[0]
-            or z_bounds[1] < -50
-            or 50 < z_bounds[0]
+            x_high < -50
+            or 50 < x_low
+            or y_high < -50
+            or 50 < y_low
+            or z_high < -50
+            or 50 < z_low
         ):
             continue
 
-        x_bounds = (clamp(x_bounds[0], -50, 50), clamp(x_bounds[1], -50, 50))
-        y_bounds = (clamp(y_bounds[0], -50, 50), clamp(y_bounds[1], -50, 50))
-        z_bounds = (clamp(z_bounds[0], -50, 50), clamp(z_bounds[1], -50, 50))
+        (x_low, x_high) = (clamp(x_low, -50, 50), clamp(x_high, -50, 50))
+        (y_low, y_high) = (clamp(y_low, -50, 50), clamp(y_high, -50, 50))
+        (z_low, z_high) = (clamp(z_low, -50, 50), clamp(z_high, -50, 50))
 
-        for x in range(x_bounds[0], x_bounds[1] + 1):
-            for y in range(y_bounds[0], y_bounds[1] + 1):
-                for z in range(z_bounds[0], z_bounds[1] + 1):
+        for x in range(x_low, x_high + 1):
+            for y in range(y_low, y_high + 1):
+                for z in range(z_low, z_high + 1):
                     if should_enable:
                         enabled_cubes.add((x, y, z))
                     else:
