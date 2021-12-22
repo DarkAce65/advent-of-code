@@ -3,6 +3,10 @@ from pathlib import Path
 Instruction = tuple[bool, tuple[int, int], tuple[int, int], tuple[int, int]]
 
 
+def clamp(num: int, low: int, high: int) -> int:
+    return max(low, min(num, high))
+
+
 def parse_instructions(problem_input: list[str]) -> list[Instruction]:
     instructions = []
     for instruction in problem_input:
@@ -26,15 +30,23 @@ def parse_instructions(problem_input: list[str]) -> list[Instruction]:
 def part_one(instructions: list[Instruction]) -> int:
     enabled_cubes: set[tuple[int, int, int]] = set()
     for (should_enable, x_bounds, y_bounds, z_bounds) in instructions:
+        if (
+            x_bounds[1] < -50
+            or 50 < x_bounds[0]
+            or y_bounds[1] < -50
+            or 50 < y_bounds[0]
+            or z_bounds[1] < -50
+            or 50 < z_bounds[0]
+        ):
+            continue
+
+        x_bounds = (clamp(x_bounds[0], -50, 50), clamp(x_bounds[1], -50, 50))
+        y_bounds = (clamp(y_bounds[0], -50, 50), clamp(y_bounds[1], -50, 50))
+        z_bounds = (clamp(z_bounds[0], -50, 50), clamp(z_bounds[1], -50, 50))
+
         for x in range(x_bounds[0], x_bounds[1] + 1):
-            if x < -50 or 50 < x:
-                continue
             for y in range(y_bounds[0], y_bounds[1] + 1):
-                if y < -50 or 50 < y:
-                    continue
                 for z in range(z_bounds[0], z_bounds[1] + 1):
-                    if z < -50 or 50 < z:
-                        continue
                     if should_enable:
                         enabled_cubes.add((x, y, z))
                     else:
