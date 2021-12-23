@@ -97,7 +97,6 @@ def compute_best_energy_cost(burrow_str: str) -> Optional[int]:
         else:
             hallway_start_index = room_index + 2
             hallway_end_index = hallway_index
-
         if any(
             slot is not None for slot in hallway[hallway_start_index:hallway_end_index]
         ):
@@ -109,11 +108,9 @@ def compute_best_energy_cost(burrow_str: str) -> Optional[int]:
         next_hallway[hallway_index] = None
 
         room_steps = target_index_within_room + 1
-        hallway_steps = (hallway_end_index - hallway_start_index) * 2 + 1
-        if hallway_index == 0:
-            hallway_steps -= 1
-        elif hallway_index == 6:
-            hallway_steps -= 1
+        hallway_steps = (hallway_end_index - hallway_start_index) * 2 + (
+            0 if 0 < hallway_index and hallway_index < 6 else 1
+        )
 
         next_states.append(
             (
