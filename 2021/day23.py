@@ -7,32 +7,25 @@ class Burrow:
     rooms: list[deque[str]]
     hallway_slots: list[Optional[str]]
 
-    def __init__(self, hallway_length: int, rooms: list[deque[str]]) -> None:
-        self.rooms = rooms
-        self.hallway_slots = [None] * (hallway_length - len(rooms))
+    def __init__(self, problem_input: list[str]) -> None:
+        self.rooms = []
+        for index in range(len(problem_input[2])):
+            if problem_input[2][index].isalpha():
+                self.rooms.append(deque(problem_input[2][index]))
+
+        for row in problem_input[3:]:
+            parsed_row = row.strip().replace("#", "")
+            for index in range(len(parsed_row)):
+                self.rooms[index].append(parsed_row[index])
+
+        self.hallway_slots = [None] * (len(problem_input[1].strip("#")) - len(self.rooms))
 
     def __repr__(self) -> str:
         return "rooms: " + str(self.rooms) + "\nhallway: " + str(self.hallway_slots)
 
 
-def parse_amphipod_locations(problem_input: list[str]) -> Burrow:
-    hallway_length = len(problem_input[1].strip("#"))
-
-    rooms: list[deque[str]] = []
-    for index in range(len(problem_input[2])):
-        if problem_input[2][index].isalpha():
-            rooms.append(deque(problem_input[2][index]))
-
-    for row in problem_input[3:]:
-        parsed_row = row.strip().replace("#", "")
-        for index in range(len(parsed_row)):
-            rooms[index].append(parsed_row[index])
-
-    return Burrow(hallway_length, rooms)
-
-
 def part_one(problem_input: list[str]) -> int:
-    burrow = parse_amphipod_locations(problem_input)
+    burrow = Burrow(problem_input)
 
     print(burrow)
 
