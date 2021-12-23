@@ -4,6 +4,7 @@ from typing import Iterable, Iterator, Optional, Sequence, TypeVar
 
 ROOM_INDEX_TO_AMPHIPOD = {0: "A", 1: "B", 2: "C", 3: "D"}
 AMPHIPOD_TO_ROOM_INDEX = {v: k for k, v in ROOM_INDEX_TO_AMPHIPOD.items()}
+AMPHIPOD_STEP_COSTS = {"A": 1, "B": 10, "C": 100, "D": 1000}
 
 
 T = TypeVar("T")
@@ -33,7 +34,6 @@ def build_burrow_str(
 def parse_burrow_str(
     burrow_str: str,
 ) -> tuple[list[list[Optional[str]]], list[Optional[str]]]:
-    print(burrow_str)
     [rooms_str, hallway_str] = burrow_str.split("|")
 
     return (
@@ -72,13 +72,64 @@ def compute_best_energy_cost(burrow_str: str) -> Optional[int]:
 
     next_states: list[tuple[str, int]] = []
 
-    for amphipod in hallway:
+    for hallway_index in range(len(hallway)):
+        amphipod = hallway[hallway_index]
         if amphipod is None:
             continue
 
-        print("hallway", amphipod)
+        room_index = AMPHIPOD_TO_ROOM_INDEX[amphipod]
 
-    for room in rooms:
+        target_index_within_room: Optional[int] = None
+        for index_within_room in range(len(rooms[room_index])):
+            a = rooms[room_index][index_within_room]
+            if a is None:
+                target_index_within_room = index_within_room
+            elif a != amphipod:
+                target_index_within_room = None
+                break
+
+        if target_index_within_room is None:
+            continue
+
+        if room_index + 2 > hallway_index:
+            hallway_start_index = hallway_index + 1
+            hallway_end_index = room_index + 2
+        else:
+            hallway_start_index = room_index + 2
+            hallway_end_index = hallway_index
+
+        if any(
+            slot is not None for slot in hallway[hallway_start_index:hallway_end_index]
+        ):
+            continue
+
+        next_rooms = rooms.copy()
+        next_rooms[room_index][target_index_within_room] = amphipod
+        next_hallway = hallway.copy()
+        next_hallway[hallway_index] = None
+
+        room_steps = target_index_within_room + 1
+        hallway_steps = (hallway_end_index - hallway_start_index) * 2 + 1
+        if hallway_index == 0:
+            hallway_steps -= 1
+        elif hallway_index == 6:
+            hallway_steps -= 1
+
+        next_states.append(
+            (
+                build_burrow_str(next_rooms, next_hallway),
+                AMPHIPOD_STEP_COSTS[amphipod] * (room_steps + hallway_steps),
+            )
+        )
+
+    for room_index in range(len(rooms)):
+        room = rooms[room_index]
+        if all(
+            amphipod is None or amphipod == ROOM_INDEX_TO_AMPHIPOD[room_index]
+            for amphipod in room
+        ):
+            continue
+
         for amphipod in room:
             if amphipod is None:
                 continue
