@@ -70,7 +70,7 @@ def compute_best_energy_cost(burrow_str: str) -> Optional[int]:
 
     (rooms, hallway) = parse_burrow_str(burrow_str)
 
-    next_states: list[str] = []
+    next_states: list[tuple[str, int]] = []
 
     for amphipod in hallway:
         if amphipod is None:
@@ -87,10 +87,12 @@ def compute_best_energy_cost(burrow_str: str) -> Optional[int]:
             break
 
     lowest_cost: Optional[int] = None
-    for next_state in next_states:
-        cost = compute_best_energy_cost(next_state)
-        if cost is not None and (lowest_cost is None or cost < lowest_cost):
-            lowest_cost = cost
+    for (next_state, cost) in next_states:
+        cost_to_organize = compute_best_energy_cost(next_state)
+        if cost_to_organize is not None and (
+            lowest_cost is None or cost + cost_to_organize < lowest_cost
+        ):
+            lowest_cost = cost + cost_to_organize
 
     lowest_costs[burrow_str] = lowest_cost
     return lowest_cost
