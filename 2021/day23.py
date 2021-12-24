@@ -1,3 +1,4 @@
+import copy
 import itertools
 from pathlib import Path
 from typing import Iterable, Iterator, Optional, Sequence, TypeVar
@@ -102,15 +103,15 @@ def compute_best_energy_cost(burrow_str: str) -> Optional[int]:
         ):
             continue
 
-        next_rooms = rooms.copy()
+        next_rooms = copy.deepcopy(rooms)
         next_rooms[room_index][target_index_within_room] = amphipod
         next_hallway = hallway.copy()
         next_hallway[hallway_index] = None
 
         room_steps = target_index_within_room + 1
-        hallway_steps = (hallway_end_index - hallway_start_index) * 2 + (
-            0 if 0 < hallway_index and hallway_index < 6 else 1
-        )
+        hallway_steps = (hallway_end_index - hallway_start_index) * 2
+        if 0 < hallway_index and hallway_index < 6:
+            hallway_steps += 1
 
         next_states.append(
             (
@@ -127,11 +128,45 @@ def compute_best_energy_cost(burrow_str: str) -> Optional[int]:
         ):
             continue
 
-        for amphipod in room:
+        for index_within_room in range(len(rooms[room_index])):
+            amphipod = rooms[room_index][index_within_room]
             if amphipod is None:
                 continue
 
-            print("room", amphipod)
+            (left_index, right_index) = (room_index + 1, room_index + 2)
+            hallway_indices = set()
+            while (left_index >= 0 and hallway[left_index] is None) or (
+                right_index < len(hallway) and hallway[right_index] is None
+            ):
+                if left_index >= 0 and hallway[left_index] is None:
+                    hallway_indices.add(left_index)
+                    left_index -= 1
+                if right_index < len(hallway) and hallway[right_index] is None:
+                    hallway_indices.add(right_index)
+                    right_index += 1
+
+            for hallway_index in hallway_indices:
+                next_rooms = copy.deepcopy(rooms)
+                next_rooms[room_index][index_within_room] = None
+                next_hallway = hallway.copy()
+                next_hallway[hallway_index] = amphipod
+
+                room_steps = index_within_room + 1
+                if room_index + 2 <= hallway_index:
+                    hallway_steps = (hallway_index - (room_index + 2)) * 2
+                else:
+                    hallway_steps = (room_index + 1 - hallway_index) * 2
+
+                if 0 < hallway_index and hallway_index < 6:
+                    hallway_steps += 1
+
+                next_states.append(
+                    (
+                        build_burrow_str(next_rooms, next_hallway),
+                        AMPHIPOD_STEP_COSTS[amphipod] * (room_steps + hallway_steps),
+                    )
+                )
+
             break
 
     lowest_cost: Optional[int] = None
@@ -148,7 +183,6 @@ def compute_best_energy_cost(burrow_str: str) -> Optional[int]:
 
 def part_one(problem_input: list[str]) -> int:
     burrow_str = parse_input(problem_input)
-    burrow_str = "BACDBC.A|D......"
 
     lowest_cost = compute_best_energy_cost(burrow_str)
     if lowest_cost is None:
