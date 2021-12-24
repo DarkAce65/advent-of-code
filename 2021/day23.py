@@ -38,7 +38,11 @@ def parse_burrow_str(
     [rooms_str, hallway_str] = burrow_str.split("|")
 
     return (
-        list(chunks(map(lambda c: None if c == "." else c, rooms_str), 2)),
+        list(
+            chunks(
+                map(lambda c: None if c == "." else c, rooms_str), int(len(rooms_str) / 4)
+            )
+        ),
         list(map(lambda c: None if c == "." else c, hallway_str)),
     )
 
@@ -59,9 +63,29 @@ def parse_input(problem_input: list[str]) -> str:
     return build_burrow_str(rooms, hallway_slots)
 
 
+def parse_folded_input(problem_input: list[str]) -> str:
+    rooms: list[list[Optional[str]]] = []
+    for index in range(len(problem_input[2])):
+        if problem_input[2][index].isalpha():
+            rooms.append(list(problem_input[2][index]))
+
+    unfolded_input = ["  #D#C#B#A#  ", "  #D#B#A#C#  "] + problem_input[3:]
+    for row in unfolded_input:
+        parsed_row = row.strip().replace("#", "")
+        for index in range(len(parsed_row)):
+            rooms[index].append(parsed_row[index])
+
+    hallway_slots = [None] * (len(problem_input[1].strip("#")) - len(rooms))
+
+    return build_burrow_str(rooms, hallway_slots)
+
+
 lowest_costs: dict[str, Optional[int]] = {}
 lowest_costs[
     build_burrow_str([["A"] * 2, ["B"] * 2, ["C"] * 2, ["D"] * 2], [None] * 7)
+] = 0
+lowest_costs[
+    build_burrow_str([["A"] * 4, ["B"] * 4, ["C"] * 4, ["D"] * 4], [None] * 7)
 ] = 0
 
 
@@ -192,7 +216,13 @@ def part_one(problem_input: list[str]) -> int:
 
 
 def part_two(problem_input: list[str]) -> int:
-    pass
+    burrow_str = parse_folded_input(problem_input)
+
+    lowest_cost = compute_best_energy_cost(burrow_str)
+    if lowest_cost is None:
+        raise ValueError("No solution to the given input")
+
+    return lowest_cost
 
 
 if __name__ == "__main__":
