@@ -166,11 +166,12 @@ class ALU:
     ) -> None:
         index = len(optimized_program) - 1
         while index >= 0:
-            (_, a, b) = optimized_program[index]
-            if a == var:
-                del optimized_program[index]
-            elif b == var:
-                break
+            (instruction, a, b) = optimized_program[index]
+            if not instruction.startswith("inp"):
+                if a == var:
+                    del optimized_program[index]
+                elif b == var:
+                    break
             index -= 1
 
     @staticmethod
