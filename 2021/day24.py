@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Optional
 
 
 class ALU:
@@ -88,10 +87,15 @@ class ALU:
 
 def part_one(problem_input: list[str]) -> int:
     alu = ALU()
-    program_vars = alu.run_program(problem_input, list(map(int, "13579246899999")))
-    print(program_vars)
+    for model_number in range(99_999_999_999_999, 11_111_111_111_111, -1):
+        if "0" in str(model_number):
+            continue
 
-    return 0
+        (_, _, _, z) = alu.run_program(problem_input, list(map(int, str(model_number))))
+        if z == 0:
+            return model_number
+
+    raise ValueError("No valid model number found")
 
 
 def part_two(problem_input: list[str]) -> int:
