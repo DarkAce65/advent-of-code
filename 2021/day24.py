@@ -11,7 +11,11 @@ def part_one(digit_candidates: list[set[int]]) -> int:
 
 
 def part_two(digit_candidates: list[set[int]]) -> int:
-    pass
+    model_number = ""
+    for candidates in digit_candidates:
+        model_number += str(min(candidates))
+
+    return int(model_number)
 
 
 if __name__ == "__main__":
