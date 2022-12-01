@@ -2,11 +2,11 @@ from pathlib import Path
 
 
 def part_one(problem_input: list[str]) -> int:
-    pass
+    return 0
 
 
 def part_two(problem_input: list[str]) -> int:
-    pass
+    return 0
 
 
 if __name__ == "__main__":
