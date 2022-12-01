@@ -1,0 +1,43 @@
+[tool.poetry]
+name = "advent-of-code-2022"
+version = "0.1.0"
+description = ""
+authors = ["DarkAce65 <tvdood99@gmail.com>"]
+
+[tool.isort]
+profile = "black"
+src_paths = ["*.py"]
+
+[tool.black]
+line-length = 90
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.mypy_cache
+  | \.venv
+)/
+'''
+
+[tool.taskipy.tasks]
+pre_format = "isort ."
+format = "black ."
+pre_lint = "task format"
+lint = "task lint_mypy"
+lint_mypy = "mypy *.py"
+pre_run = "task lint"
+run = "python"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[tool.poetry.dev-dependencies]
+black = "^22.1.0"
+isort = "^5.10.1"
+mypy = "^0.990"
+taskipy = "^1.6.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
