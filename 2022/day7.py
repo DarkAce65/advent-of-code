@@ -18,9 +18,9 @@ def parse_filesystem(commands: list[str]) -> dict[str, int]:
                 cwd = cwd + path + "/"
             i += 1
         elif command == "$ ls":
-            j = 0
-            while i + j + 1 < len(commands):
-                line = commands[i + 1 + j]
+            i += 1
+            while i < len(commands):
+                line = commands[i]
                 if line.startswith("$"):
                     break
 
@@ -30,15 +30,13 @@ def parse_filesystem(commands: list[str]) -> dict[str, int]:
                 else:
                     size, filename = line.split(" ")
                     files[cwd + filename] = int(size)
-                j += 1
-            i += j + 1
+                i += 1
         else:
             raise ValueError("Unrecognized command '" + command + "'")
 
     for path in files.keys():
-        if not path.endswith("/"):
-            continue
-        files[path] = sum(files[p] for p in files.keys() if p.startswith(path))
+        if path.endswith("/"):
+            files[path] = sum(files[p] for p in files.keys() if p.startswith(path))
 
     return files
 
@@ -61,9 +59,11 @@ def part_two(problem_input: list[str]) -> int:
 
     smallest_dir_size_to_delete = files["/"]
     for path in files.keys():
-        if not path.endswith("/"):
-            continue
-        if smallest_dir_size_to_delete > files[path] and files[path] >= delete_at_least:
+        if (
+            path.endswith("/")
+            and smallest_dir_size_to_delete > files[path]
+            and files[path] >= delete_at_least
+        ):
             smallest_dir_size_to_delete = files[path]
 
     return smallest_dir_size_to_delete
