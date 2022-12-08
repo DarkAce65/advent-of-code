@@ -18,29 +18,40 @@ def part_one(problem_input: list[str]) -> int:
                 if int(problem_input[k][j]) >= cell:
                     visible_from_top = False
                     break
+
+            if visible_from_top:
+                num_visible_trees += 1
+                continue
+
             visible_from_bottom = True
             for k in range(i + 1, len(problem_input)):
                 if int(problem_input[k][j]) >= cell:
                     visible_from_bottom = False
                     break
+
+            if visible_from_bottom:
+                num_visible_trees += 1
+                continue
+
             visible_from_left = True
             for k in range(j - 1, -1, -1):
                 if int(problem_input[i][k]) >= cell:
                     visible_from_left = False
                     break
+
+            if visible_from_left:
+                num_visible_trees += 1
+                continue
+
             visible_from_right = True
             for k in range(j + 1, len(problem_input[i])):
                 if int(problem_input[i][k]) >= cell:
                     visible_from_right = False
                     break
 
-            if (
-                visible_from_top
-                or visible_from_bottom
-                or visible_from_left
-                or visible_from_right
-            ):
+            if visible_from_right:
                 num_visible_trees += 1
+                continue
 
     return num_visible_trees
 
