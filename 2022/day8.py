@@ -1,6 +1,4 @@
-import math
 from pathlib import Path
-from typing import Optional
 
 
 def part_one(problem_input: list[str]) -> int:
