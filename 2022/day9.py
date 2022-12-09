@@ -11,7 +11,7 @@ def part_one(problem_input: list[str]) -> int:
     tail = [0, 0]
     visited_positions: set[str] = set()
 
-    visited_positions.add(str(tail[0]) + "," + str(tail[1]))
+    visited_positions.add(f"{tail[0]},{tail[1]}")
     for action in problem_input:
         dir, dist_str = action.split(" ")
         dist = int(dist_str)
@@ -31,7 +31,7 @@ def part_one(problem_input: list[str]) -> int:
                 if head[1] - tail[1] != 0:
                     tail[1] += int(math.copysign(1, head[1] - tail[1]))
 
-            visited_positions.add(str(tail[0]) + "," + str(tail[1]))
+            visited_positions.add(f"{tail[0]},{tail[1]}")
 
     return len(visited_positions)
 
@@ -40,7 +40,7 @@ def part_two(problem_input: list[str]) -> int:
     rope = [[0, 0] for _ in range(10)]
     visited_positions: set[str] = set()
 
-    visited_positions.add(str(rope[-1][0]) + "," + str(rope[-1][1]))
+    visited_positions.add(f"{rope[-1][0]},{rope[-1][1]}")
     for action in problem_input:
         dir, dist_str = action.split(" ")
         dist = int(dist_str)
@@ -65,7 +65,7 @@ def part_two(problem_input: list[str]) -> int:
                     if knot_before[1] - knot[1] != 0:
                         knot[1] += int(math.copysign(1, knot_before[1] - knot[1]))
 
-            visited_positions.add(str(rope[-1][0]) + "," + str(rope[-1][1]))
+            visited_positions.add(f"{rope[-1][0]},{rope[-1][1]}")
 
     return len(visited_positions)
 
