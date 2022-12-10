@@ -31,7 +31,7 @@ def execute_program(problem_input: list[str], cycle_hook: Callable[[int, int], N
                 current_instruction = (problem_input[program_counter], 1)
             else:
                 raise ValueError(
-                    "Unknown instruction `" + problem_input[program_counter] + "`"
+                    f"Unknown instruction `{problem_input[program_counter]}`"
                 )
         else:
             current_instruction = (current_instruction[0], current_instruction[1] - 1)
@@ -57,7 +57,7 @@ def part_one(problem_input: list[str]) -> int:
 
 
 def part_two(problem_input: list[str]) -> str:
-    screen = ["." * 40 for _ in range(6)]
+    screen = [["."] * 40 for _ in range(6)]
 
     def cycle_hook(current_cycle: int, register_value: int):
         nonlocal screen
@@ -66,11 +66,11 @@ def part_two(problem_input: list[str]) -> str:
         row = int(position / 40)
         cell = position % 40
         if register_value - 1 <= cell and cell <= register_value + 1:
-            screen[row] = screen[row][:cell] + "#" + screen[row][cell + 1 :]
+            screen[row][cell] = "#"
 
     execute_program(problem_input, cycle_hook)
 
-    return "\n" + "\n".join(screen)
+    return "\n" + "\n".join("".join(row) for row in screen)
 
 
 if __name__ == "__main__":
