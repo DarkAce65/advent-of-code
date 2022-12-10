@@ -37,7 +37,7 @@ def part_one(problem_input: list[str]) -> int:
     return sum(signal_values)
 
 
-def part_two(problem_input: list[str]):
+def part_two(problem_input: list[str]) -> str:
     screen = ["." * 40 for _ in range(6)]
 
     current_cycle = 0
@@ -65,8 +65,7 @@ def part_two(problem_input: list[str]):
     if register_value - 1 <= cell and cell <= register_value + 1:
         screen[row] = screen[row][:cell] + "#" + screen[row][cell + 1 :]
 
-    for line in screen:
-        print(line)
+    return "\n" + "\n".join(screen)
 
 
 if __name__ == "__main__":
