@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import math
+from dataclasses import dataclass
 from pathlib import Path
-from typing import NamedTuple, Optional
+from typing import Generic, TypeGuard, TypeVar, cast
 
 
 class divisibleint:
@@ -53,13 +54,27 @@ class divisibleint:
         return str(self.remainders)
 
 
-class ThrownItem(NamedTuple):
-    item: divisibleint
+T = TypeVar("T")
+
+
+@dataclass
+class ThrownItem(Generic[T]):
+    item: T
     to_index: int
 
 
+def is_int_list(lst: list[int] | list[divisibleint]) -> TypeGuard[list[int]]:
+    return len(lst) == 0 or isinstance(lst[0], int)
+
+
+def is_divisibleint_list(
+    lst: list[int] | list[divisibleint],
+) -> TypeGuard[list[divisibleint]]:
+    return len(lst) == 0 or isinstance(lst[0], divisibleint)
+
+
 class Monkey:
-    items: list[divisibleint]
+    items: list[int] | list[divisibleint]
     equation: str
     test_divisible_by: int
     if_true_index: int
@@ -75,14 +90,31 @@ class Monkey:
         if_true_index: int,
         if_false_index: int,
         divisors: list[int],
+        use_divisible_int: bool = False,
     ) -> None:
-        self.items = [divisibleint.for_divisors(x, divisors) for x in starting_items]
+        self.items = (
+            [divisibleint.for_divisors(x, divisors) for x in starting_items]
+            if use_divisible_int
+            else starting_items
+        )
         self.equation = equation
         self.test_divisible_by = test_divisible_by
         self.if_true_index = if_true_index
         self.if_false_index = if_false_index
 
         self.inspected_items = 0
+
+    def operation_bounded(self, x: int) -> int:
+        if "+" in self.equation:
+            return x + int(self.equation.split("+")[1].strip())
+        elif "*" in self.equation:
+            multiplicand = self.equation.split("*")[1].strip()
+            if multiplicand == "old":
+                return x * x
+            else:
+                return x * int(multiplicand)
+
+        raise ValueError(f"Unknown operation `{self.equation}`")
 
     def operation(self, x: divisibleint) -> divisibleint:
         if "+" in self.equation:
@@ -96,8 +128,33 @@ class Monkey:
 
         raise ValueError(f"Unknown operation `{self.equation}`")
 
-    def throw_items(self) -> list[ThrownItem]:
-        thrown_items: list[ThrownItem] = []
+    def throw_items_bounded(self) -> list[ThrownItem[int]]:
+        if not is_int_list(self.items):
+            raise ValueError
+
+        thrown_items: list[ThrownItem[int]] = []
+        for i in range(len(self.items)):
+            self.items[i] = int(self.operation_bounded(self.items[i]) / 3)
+            thrown_items.append(
+                ThrownItem(
+                    self.items[i],
+                    self.if_true_index
+                    if self.items[i] % self.test_divisible_by == 0
+                    else self.if_false_index,
+                )
+            )
+
+            self.inspected_items += 1
+
+        self.items = cast(list[int], [])
+
+        return thrown_items
+
+    def throw_items(self) -> list[ThrownItem[divisibleint]]:
+        if not is_divisibleint_list(self.items):
+            raise ValueError
+
+        thrown_items: list[ThrownItem[divisibleint]] = []
         for i in range(len(self.items)):
             self.items[i] = self.operation(self.items[i])
             thrown_items.append(
@@ -111,12 +168,12 @@ class Monkey:
 
             self.inspected_items += 1
 
-        self.items = []
+        self.items = cast(list[divisibleint], [])
 
         return thrown_items
 
 
-def parse_monkeys(problem_input: list[str]) -> list[Monkey]:
+def parse_monkeys(problem_input: list[str], *, use_divisible_int=False) -> list[Monkey]:
     divisors: list[int] = []
     for line in problem_input:
         if "Test: divisible by " in line:
@@ -151,6 +208,7 @@ def parse_monkeys(problem_input: list[str]) -> list[Monkey]:
                     if_true_index,
                     if_false_index,
                     divisors,
+                    use_divisible_int,
                 )
             )
 
@@ -165,11 +223,13 @@ def part_one(problem_input: list[str]) -> int:
     monkeys = parse_monkeys(problem_input)
 
     for _ in range(20):
-        print(_, [m.inspected_items for m in monkeys])
         for monkey in monkeys:
-            thrown_items = monkey.throw_items()
+            thrown_items = monkey.throw_items_bounded()
             for thrown_item in thrown_items:
-                monkeys[thrown_item.to_index].items.append(thrown_item.item)
+                target_list = monkeys[thrown_item.to_index].items
+                if not is_int_list(target_list):
+                    raise ValueError
+                target_list.append(thrown_item.item)
 
     return math.prod(
         sorted((monkey.inspected_items for monkey in monkeys), reverse=True)[:2]
@@ -177,15 +237,16 @@ def part_one(problem_input: list[str]) -> int:
 
 
 def part_two(problem_input: list[str]) -> int:
-    monkeys = parse_monkeys(problem_input)
+    monkeys = parse_monkeys(problem_input, use_divisible_int=True)
 
-    for r in range(10000):
-        if r == 1 or r == 20 or r % 1000 == 0:
-            print(r, [m.inspected_items for m in monkeys])
+    for _ in range(10000):
         for monkey in monkeys:
             thrown_items = monkey.throw_items()
             for thrown_item in thrown_items:
-                monkeys[thrown_item.to_index].items.append(thrown_item.item)
+                target_list = monkeys[thrown_item.to_index].items
+                if not is_divisibleint_list(target_list):
+                    raise ValueError
+                target_list.append(thrown_item.item)
 
     return math.prod(
         sorted((monkey.inspected_items for monkey in monkeys), reverse=True)[:2]
