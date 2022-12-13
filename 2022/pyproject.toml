@@ -35,7 +35,7 @@ python = "^3.10"
 [tool.poetry.dev-dependencies]
 black = "^22.1.0"
 isort = "^5.10.1"
-mypy = "^0.990"
+mypy = "^0.991"
 taskipy = "^1.6.0"
 
 [build-system]
