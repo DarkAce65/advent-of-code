@@ -4,7 +4,7 @@ from pathlib import Path
 sand_start_point = (500, 0)
 
 
-class SandSimulation:
+class RockGridBuilder:
     map: set[tuple[int, int]]
 
     def __init__(self) -> None:
@@ -90,41 +90,41 @@ def simulate_sand_drop(
 
 
 def part_one(problem_input: list[str]) -> int:
-    sim = SandSimulation()
+    grid_builder = RockGridBuilder()
 
     for line in problem_input:
         rock_path = []
         for coordinates in line.split("->"):
             x, y = coordinates.strip().split(",")
             rock_path.append((int(x), int(y)))
-        sim.place_rock(rock_path)
+        grid_builder.place_rock(rock_path)
 
-    grid, drop_point = sim.build_grid()
+    grid, drop_point = grid_builder.build_grid()
     simulate_sand_drop(grid, drop_point)
 
     return sum(sum(1 for c in row if c == "o") for row in grid)
 
 
 def part_two(problem_input: list[str]) -> int:
-    sim = SandSimulation()
+    grid_builder = RockGridBuilder()
 
     for line in problem_input:
         rock_path = []
         for coordinates in line.split("->"):
             x, y = coordinates.strip().split(",")
             rock_path.append((int(x), int(y)))
-        sim.place_rock(rock_path)
+        grid_builder.place_rock(rock_path)
 
-    _, (_, y_max) = sim.compute_bounds()
+    _, (_, y_max) = grid_builder.compute_bounds()
     new_y_max = y_max + 2
-    sim.place_rock(
+    grid_builder.place_rock(
         [
             (sand_start_point[0] - new_y_max, new_y_max),
             (sand_start_point[0] + new_y_max, new_y_max),
         ]
     )
 
-    grid, drop_point = sim.build_grid()
+    grid, drop_point = grid_builder.build_grid()
     simulate_sand_drop(grid, drop_point)
 
     return sum(sum(1 for c in row if c == "o") for row in grid)
