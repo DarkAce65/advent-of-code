@@ -15,54 +15,76 @@ Direction = Union[
 ]
 
 
+def get_neighbors_with_direction(position: Position) -> list[tuple[Position, Direction]]:
+    x, y, z = position
+    return [
+        ((x + 1, y, z), "+x"),
+        ((x - 1, y, z), "-x"),
+        ((x, y + 1, z), "+y"),
+        ((x, y - 1, z), "-y"),
+        ((x, y, z + 1), "+z"),
+        ((x, y, z - 1), "-z"),
+    ]
+
+
 def get_prioritized_neighbors(
     position: Position, priority_direction: Direction
-) -> deque[Position]:
-    neighbors: deque[Position] = deque()
+) -> list[Position]:
     x, y, z = position
     if priority_direction == "+x":
-        neighbors.append((x + 1, y, z))
-        neighbors.append((x, y + 1, z))
-        neighbors.append((x, y - 1, z))
-        neighbors.append((x, y, z + 1))
-        neighbors.append((x, y, z - 1))
-        neighbors.append((x - 1, y, z))
+        return [
+            (x + 1, y, z),
+            (x, y + 1, z),
+            (x, y - 1, z),
+            (x, y, z + 1),
+            (x, y, z - 1),
+            (x - 1, y, z),
+        ]
     elif priority_direction == "-x":
-        neighbors.append((x - 1, y, z))
-        neighbors.append((x, y + 1, z))
-        neighbors.append((x, y - 1, z))
-        neighbors.append((x, y, z + 1))
-        neighbors.append((x, y, z - 1))
-        neighbors.append((x + 1, y, z))
+        return [
+            (x - 1, y, z),
+            (x, y + 1, z),
+            (x, y - 1, z),
+            (x, y, z + 1),
+            (x, y, z - 1),
+            (x + 1, y, z),
+        ]
     elif priority_direction == "+y":
-        neighbors.append((x, y + 1, z))
-        neighbors.append((x + 1, y, z))
-        neighbors.append((x - 1, y, z))
-        neighbors.append((x, y, z + 1))
-        neighbors.append((x, y, z - 1))
-        neighbors.append((x, y - 1, z))
+        return [
+            (x, y + 1, z),
+            (x + 1, y, z),
+            (x - 1, y, z),
+            (x, y, z + 1),
+            (x, y, z - 1),
+            (x, y - 1, z),
+        ]
     elif priority_direction == "-y":
-        neighbors.append((x, y - 1, z))
-        neighbors.append((x + 1, y, z))
-        neighbors.append((x - 1, y, z))
-        neighbors.append((x, y, z + 1))
-        neighbors.append((x, y, z - 1))
-        neighbors.append((x, y + 1, z))
+        return [
+            (x, y - 1, z),
+            (x + 1, y, z),
+            (x - 1, y, z),
+            (x, y, z + 1),
+            (x, y, z - 1),
+            (x, y + 1, z),
+        ]
     elif priority_direction == "+z":
-        neighbors.append((x, y, z + 1))
-        neighbors.append((x + 1, y, z))
-        neighbors.append((x - 1, y, z))
-        neighbors.append((x, y + 1, z))
-        neighbors.append((x, y - 1, z))
-        neighbors.append((x, y, z - 1))
+        return [
+            (x, y, z + 1),
+            (x + 1, y, z),
+            (x - 1, y, z),
+            (x, y + 1, z),
+            (x, y - 1, z),
+            (x, y, z - 1),
+        ]
     elif priority_direction == "-z":
-        neighbors.append((x, y, z - 1))
-        neighbors.append((x + 1, y, z))
-        neighbors.append((x - 1, y, z))
-        neighbors.append((x, y + 1, z))
-        neighbors.append((x, y - 1, z))
-        neighbors.append((x, y, z + 1))
-    return neighbors
+        return [
+            (x, y, z - 1),
+            (x + 1, y, z),
+            (x - 1, y, z),
+            (x, y + 1, z),
+            (x, y - 1, z),
+            (x, y, z + 1),
+        ]
 
 
 def can_reach_boundary(
@@ -161,54 +183,16 @@ def part_two(problem_input: list[str]) -> int:
     surface_area = 0
     filled_cubes = cubes.copy()
     exposed_cubes: set[Position] = set()
-    for x, y, z in cubes:
-        is_exposed, visited_cubes = can_reach_boundary(
-            "+x", bounds, filled_cubes, exposed_cubes, (x + 1, y, z)
-        )
-        if is_exposed:
-            surface_area += 1
-            exposed_cubes = exposed_cubes.union(visited_cubes)
-        else:
-            filled_cubes = filled_cubes.union(visited_cubes)
-        is_exposed, visited_cubes = can_reach_boundary(
-            "-x", bounds, filled_cubes, exposed_cubes, (x - 1, y, z)
-        )
-        if is_exposed:
-            surface_area += 1
-            exposed_cubes = exposed_cubes.union(visited_cubes)
-        else:
-            filled_cubes = filled_cubes.union(visited_cubes)
-        is_exposed, visited_cubes = can_reach_boundary(
-            "+y", bounds, filled_cubes, exposed_cubes, (x, y + 1, z)
-        )
-        if is_exposed:
-            surface_area += 1
-            exposed_cubes = exposed_cubes.union(visited_cubes)
-        else:
-            filled_cubes = filled_cubes.union(visited_cubes)
-        is_exposed, visited_cubes = can_reach_boundary(
-            "-y", bounds, filled_cubes, exposed_cubes, (x, y - 1, z)
-        )
-        if is_exposed:
-            surface_area += 1
-            exposed_cubes = exposed_cubes.union(visited_cubes)
-        else:
-            filled_cubes = filled_cubes.union(visited_cubes)
-        is_exposed, visited_cubes = can_reach_boundary(
-            "+z", bounds, filled_cubes, exposed_cubes, (x, y, z + 1)
-        )
-        if is_exposed:
-            surface_area += 1
-            exposed_cubes = exposed_cubes.union(visited_cubes)
-        else:
-            filled_cubes = filled_cubes.union(visited_cubes)
-        is_exposed, visited_cubes = can_reach_boundary(
-            "-z", bounds, filled_cubes, exposed_cubes, (x, y, z - 1)
-        )
-        if is_exposed:
-            surface_area += 1
-        elif visited_cubes is not None:
-            filled_cubes = filled_cubes.union(visited_cubes)
+    for cube in cubes:
+        for neighbor, direction in get_neighbors_with_direction(cube):
+            is_exposed, visited_cubes = can_reach_boundary(
+                direction, bounds, filled_cubes, exposed_cubes, neighbor
+            )
+            if is_exposed:
+                surface_area += 1
+                exposed_cubes = exposed_cubes.union(visited_cubes)
+            else:
+                filled_cubes = filled_cubes.union(visited_cubes)
 
     return surface_area
 
