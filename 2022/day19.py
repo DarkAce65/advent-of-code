@@ -1,6 +1,6 @@
 import math
 import re
-from collections import defaultdict, deque
+from collections import deque
 from pathlib import Path
 from typing import Literal, Union
 
@@ -16,8 +16,6 @@ class FactoryBlueprint:
     geode_robot_cost: tuple[int, int]
 
     def __init__(self, blueprint_str: str) -> None:
-        # Blueprint 1: Each ore robot costs 4 ore. Each clay robot costs 2 ore. Each obsidian robot costs 3 ore and 14 clay. Each geode robot costs 2 ore and 7 obsidian.
-
         match = re.match(
             r"Blueprint (\d+): Each ore robot costs (\d+) ore. Each clay robot costs (\d+) ore. Each obsidian robot costs (\d+) ore and (\d+) clay. Each geode robot costs (\d+) ore and (\d+) obsidian.",
             blueprint_str,
