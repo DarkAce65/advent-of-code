@@ -42,9 +42,12 @@ class ValveGraph:
                     node = cast(str, visited_nodes[node])
                 return path
 
-            nodes_to_visit.extend(
-                (node, n) for n in self.nodes[node].to_valves.difference(visited_nodes)
-            )
+            neighbors = [
+                node
+                for node in self.nodes[node].to_valves.difference(visited_nodes)
+                if node not in nodes_to_visit
+            ]
+            nodes_to_visit.extend((node, n) for n in neighbors)
 
         raise ValueError("Couldn't find end")
 
@@ -225,8 +228,6 @@ def part_two(problem_input: list[str]) -> int:
         graph.add_node(node)
 
     graph.compute_distances()
-    print(graph.nodes)
-    print(graph.path_to_valve)
     solver = DoubleWalkValveSolver(graph)
 
     return solver.find_optimal_pressure_with_elephant(26)
@@ -236,5 +237,5 @@ if __name__ == "__main__":
     with open(Path(__file__).with_suffix(".input.txt"), "r", encoding="utf-8") as file:
         problem_input = [line.rstrip() for line in file]
 
-    # print("Part One: ", part_one(problem_input))
+    print("Part One: ", part_one(problem_input))
     print("Part Two: ", part_two(problem_input))
