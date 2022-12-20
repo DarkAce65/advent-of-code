@@ -128,7 +128,6 @@ class DoubleWalkValveSolver:
             tuple[tuple[str, int], tuple[str, int], frozenset[str], int, int]
         ] = deque()
         cache: dict[tuple[frozenset[tuple[str, int]], frozenset[str], int], int] = {}
-        cache_stats = [0, 0]
 
         possible_states.append((("AA", 0), ("AA", 0), frozenset(), total_time, 0))
 
@@ -145,9 +144,7 @@ class DoubleWalkValveSolver:
             open_valve_pressure = sum(self.valve_flows[valve] for valve in open_valves)
             cache_key = (frozenset([walker_1, walker_2]), open_valves, time_left)
             if cache_key in cache and current_pressure <= cache[cache_key]:
-                cache_stats[0] += 1
                 continue
-            cache_stats[1] += 1
             cache[cache_key] = current_pressure
 
             closed_valves = valves_to_open.difference(open_valves)
@@ -155,15 +152,16 @@ class DoubleWalkValveSolver:
                 pressure = current_pressure + time_left * open_valve_pressure
                 if optimal_pressure < pressure:
                     optimal_pressure = pressure
-                    print(optimal_pressure, cache_stats)
                 continue
 
+            has_next_step = False
             for closed_valve in closed_valves:
                 # Advance walker_1
                 time_cost = (
                     self.time_to_open_valve[walker_1[0]][closed_valve] - walker_1[1]
                 )
                 if 0 <= time_cost and time_cost <= time_left:
+                    has_next_step = True
                     possible_states.appendleft(
                         (
                             (closed_valve, 0),
@@ -178,6 +176,7 @@ class DoubleWalkValveSolver:
                     self.time_to_open_valve[walker_2[0]][closed_valve] - walker_2[1]
                 )
                 if 0 <= time_cost and time_cost <= time_left:
+                    has_next_step = True
                     possible_states.appendleft(
                         (
                             (walker_1[0], walker_1[1] + time_cost),
@@ -188,7 +187,10 @@ class DoubleWalkValveSolver:
                         )
                     )
 
-        print(optimal_pressure, cache_stats)
+            if not has_next_step:
+                pressure = current_pressure + time_left * open_valve_pressure
+                if optimal_pressure < pressure:
+                    optimal_pressure = pressure
 
         return optimal_pressure
 
