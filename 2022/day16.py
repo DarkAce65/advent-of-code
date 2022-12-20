@@ -1,5 +1,5 @@
 import re
-from collections import deque
+from collections import defaultdict, deque
 from pathlib import Path
 from typing import cast
 
@@ -17,7 +17,7 @@ class ValveNode:
 
 class ValveGraph:
     nodes: dict[str, ValveNode]
-    path_to_valve: dict[str, list[str]]
+    path_to_valve: dict[str, int]
 
     def __init__(self) -> None:
         self.nodes = {}
@@ -54,9 +54,9 @@ class ValveGraph:
                 if start_node + "-" + end_node in self.path_to_valve:
                     continue
 
-                path = self.bfs(start_node, end_node)
-                self.path_to_valve[start_node + "-" + end_node] = path
-                self.path_to_valve[end_node + "-" + start_node] = path
+                path_len = len(self.bfs(start_node, end_node))
+                self.path_to_valve[start_node + "-" + end_node] = path_len
+                self.path_to_valve[end_node + "-" + start_node] = path_len
 
     def find_optimal_pressure(
         self,
@@ -80,7 +80,7 @@ class ValveGraph:
             if self.nodes[node].flow_rate == 0 or node in open_valves:
                 continue
 
-            time_to_open_valve = len(self.path_to_valve[current_node + "-" + node]) + 1
+            time_to_open_valve = self.path_to_valve[current_node + "-" + node] + 1
             if time_left - time_to_open_valve < 0:
                 continue
 
@@ -94,214 +94,100 @@ class ValveGraph:
 
         return best_pressure
 
-    def find_optimal_pressure_with_elephant(
-        self,
-        steps: list[str],
-        elephant_steps: list[str],
-        open_valves: set[str] = set(),
-        time_left=26,
-    ) -> int:
-        if time_left == 0:
-            return 0
 
-        current_pressure = sum(
-            self.nodes[open_valve].flow_rate for open_valve in open_valves
+class DoubleWalkValveSolver:
+    valve_flows: dict[str, int]
+    time_to_open_valve: defaultdict[str, dict[str, int]]
+
+    def __init__(self, graph: ValveGraph) -> None:
+        self.valve_flows = {}
+        self.time_to_open_valve = defaultdict(dict)
+
+        for node in graph.nodes.values():
+            if node.name == "AA" or node.flow_rate > 0:
+                self.valve_flows[node.name] = node.flow_rate
+
+        for key, path_len in graph.path_to_valve.items():
+            from_node, to_node = key.split("-")
+            if (
+                from_node == "AA"
+                or to_node == "AA"
+                or (from_node in self.valve_flows and to_node in self.valve_flows)
+            ):
+                self.time_to_open_valve[from_node][to_node] = path_len + 1
+
+    def find_optimal_pressure_with_elephant(self, total_time: int) -> int:
+        valves_to_open = set(
+            valve for valve, flow_rate in self.valve_flows.items() if flow_rate > 0
         )
 
-        if len(steps) == 0 and len(elephant_steps) == 0:
-            return current_pressure * time_left
-        elif len(steps) == 0:
-            return current_pressure + self.find_optimal_pressure_with_elephant(
-                [], elephant_steps[1:], open_valves, time_left - 1
-            )
-        elif len(elephant_steps) == 0:
-            return current_pressure + self.find_optimal_pressure_with_elephant(
-                steps[1:], [], open_valves, time_left - 1
-            )
+        possible_states: deque[
+            tuple[tuple[str, int], tuple[str, int], frozenset[str], int, int]
+        ] = deque()
+        cache: dict[tuple[frozenset[tuple[str, int]], frozenset[str], int], int] = {}
+        cache_stats = [0, 0]
 
-        node_candidates: list[list[str]] = []
-        elephant_node_candidates: list[list[str]] = []
-        if len(steps) > 1 and len(elephant_steps) > 1:
-            return current_pressure + self.find_optimal_pressure_with_elephant(
-                steps[1:], elephant_steps[1:], open_valves, time_left - 1
-            )
-        elif len(steps) == 1 and len(elephant_steps) > 1:
-            for node in self.nodes:
-                if (
-                    self.nodes[node].flow_rate == 0
-                    or node in open_valves
-                    or node == elephant_steps[-1]
-                ):
-                    continue
+        possible_states.append((("AA", 0), ("AA", 0), frozenset(), total_time, 0))
 
-                path = self.path_to_valve[steps[0] + "-" + node]
-                time_to_open_valve = len(path) + 1
-                if time_left - time_to_open_valve >= 0:
-                    node_candidates.append(path)
+        optimal_pressure = 0
+        while len(possible_states) > 0:
+            (
+                walker_1,
+                walker_2,
+                open_valves,
+                time_left,
+                current_pressure,
+            ) = possible_states.popleft()
 
-            if len(node_candidates) == 0:
-                return current_pressure + (
-                    self.find_optimal_pressure_with_elephant(
-                        [], elephant_steps[1:], open_valves, time_left - 1
+            open_valve_pressure = sum(self.valve_flows[valve] for valve in open_valves)
+            cache_key = (frozenset([walker_1, walker_2]), open_valves, time_left)
+            if cache_key in cache and current_pressure <= cache[cache_key]:
+                cache_stats[0] += 1
+                continue
+            cache_stats[1] += 1
+            cache[cache_key] = current_pressure
+
+            closed_valves = valves_to_open.difference(open_valves)
+            if len(closed_valves) == 0 or time_left == 0:
+                pressure = current_pressure + time_left * open_valve_pressure
+                if optimal_pressure < pressure:
+                    optimal_pressure = pressure
+                    print(optimal_pressure, cache_stats)
+                continue
+
+            for closed_valve in closed_valves:
+                # Advance walker_1
+                time_cost = (
+                    self.time_to_open_valve[walker_1[0]][closed_valve] - walker_1[1]
+                )
+                if 0 <= time_cost and time_cost <= time_left:
+                    possible_states.appendleft(
+                        (
+                            (closed_valve, 0),
+                            (walker_2[0], walker_2[1] + time_cost),
+                            open_valves.union([closed_valve]),
+                            time_left - time_cost,
+                            current_pressure + time_cost * open_valve_pressure,
+                        )
                     )
+                # Advance walker_2
+                time_cost = (
+                    self.time_to_open_valve[walker_2[0]][closed_valve] - walker_2[1]
                 )
-
-            new_open_valves = open_valves.copy()
-            new_open_valves.add(elephant_steps[0])
-            return current_pressure + max(
-                self.find_optimal_pressure_with_elephant(
-                    new_steps, elephant_steps[1:], new_open_valves, time_left - 1
-                )
-                for new_steps in node_candidates
-            )
-        elif len(steps) > 1 and len(elephant_steps) == 1:
-            for node in self.nodes:
-                if (
-                    self.nodes[node].flow_rate == 0
-                    or node in open_valves
-                    or node == steps[-1]
-                ):
-                    continue
-
-                path = self.path_to_valve[steps[0] + "-" + node]
-                time_to_open_valve = len(path) + 1
-                if time_left - time_to_open_valve >= 0:
-                    elephant_node_candidates.append(path)
-
-            if len(elephant_node_candidates) == 0:
-                return current_pressure + (
-                    self.find_optimal_pressure_with_elephant(
-                        steps[1:], [], open_valves, time_left - 1
+                if 0 <= time_cost and time_cost <= time_left:
+                    possible_states.appendleft(
+                        (
+                            (walker_1[0], walker_1[1] + time_cost),
+                            (closed_valve, 0),
+                            open_valves.union([closed_valve]),
+                            time_left - time_cost,
+                            current_pressure + time_cost * open_valve_pressure,
+                        )
                     )
-                )
 
-            new_open_valves = open_valves.copy()
-            new_open_valves.add(elephant_steps[0])
-            return current_pressure + max(
-                self.find_optimal_pressure_with_elephant(
-                    steps[1:], new_elephant_steps, new_open_valves, time_left - 1
-                )
-                for new_elephant_steps in elephant_node_candidates
-            )
-        elif len(steps) == 1 and len(elephant_steps) == 1:
-            for node in self.nodes:
-                if self.nodes[node].flow_rate == 0 or node in open_valves:
-                    continue
+        print(optimal_pressure, cache_stats)
 
-                path = self.path_to_valve[steps[0] + "-" + node]
-                time_to_open_valve = len(path) + 1
-                if time_left - time_to_open_valve >= 0:
-                    node_candidates.append(path)
-
-                path = self.path_to_valve[elephant_steps[0] + "-" + node]
-                time_to_open_valve = len(path) + 1
-                if time_left - time_to_open_valve >= 0:
-                    elephant_node_candidates.append(path)
-
-            new_open_valves = open_valves.copy()
-            new_open_valves.add(steps[0])
-            new_open_valves.add(elephant_steps[0])
-
-            candidates: list[tuple[list[str], list[str]]] = []
-            node_candidates.append([])
-            elephant_node_candidates.append([])
-            for path in node_candidates:
-                for elephant_path in elephant_node_candidates:
-                    if (
-                        len(path) > 0
-                        and len(elephant_path) > 0
-                        and path[-1] == elephant_path[-1]
-                    ):
-                        continue
-
-                    candidates.append((path, elephant_path))
-
-            if len(candidates) == 0:
-                return current_pressure * time_left
-
-            return current_pressure + max(
-                self.find_optimal_pressure_with_elephant(
-                    new_steps, new_elephant_steps, new_open_valves, time_left - 1
-                )
-                for new_steps, new_elephant_steps in candidates
-            )
-
-        raise NotImplementedError
-
-
-# class DoubleWalkValveSolver:
-#     optimal_single_walk: int
-#     valve_flows: dict[str, int]
-#     time_to_open_valve: dict[str, dict[str, int]]
-
-#     def __init__(self, graph: ValveGraph) -> None:
-#         self.optimal_single_walk = graph.find_optimal_pressure(time_left=26)
-#         self.valve_flows = {}
-#         self.time_to_open_valve = {}
-
-#         for node in graph.nodes.values():
-#             if node.name == "AA" or node.flow_rate > 0:
-#                 self.valve_flows[node.name] = node.flow_rate
-#                 for to_node in node.to_valves:
-#                     if graph.nodes[to_node].flow_rate > 0:
-#                         self.time_to_open_valve[(node.name, to_node)] = (
-#                             len(graph.path_to_valve) + 1
-#                         )
-#         for key, path in graph.path_to_valve.items():
-#             from_node, to_node = key.split("-")
-#             if (
-#                 from_node == "AA"
-#                 or to_node == "AA"
-#                 or (from_node in self.nodes and to_node in self.nodes)
-#             ):
-#                 self.time_to_open_valve[(from_node, to_node)] = len(path) + 1
-
-#     def complete_sequence(
-#         self, sequence_start: list[tuple[int, list[str]]]
-#     ) -> list[list[tuple[int, list[str]]]]:
-#         sequences: list[list[tuple[int, list[str]]]] = []
-#         open_valves: set[str] = set()
-#         time_left = 26
-#         while time_left >= 0:
-#             you = "AA"
-#             elephant = "AA"
-#             time_left -= 1
-
-#         if len(sequences) == 0:
-#             sequences.append(sequence_start)
-#         return sequences
-
-#     def compute_sequence_pressure(self, sequence: list[tuple[int, list[str]]]) -> int:
-#         pressure = 0
-#         for time, opened_valves in sequence:
-#             for valve in opened_valves:
-#                 pressure += (26 - time) * self.nodes[valve].flow_rate
-
-#         return pressure
-
-#     def compute_possible_paths(
-#         self, from_node: str, ignore_valves: set[str], time_left: int
-#     ) -> list[tuple[str, int]]:
-#         possible_paths: list[tuple[str, int]] = []
-#         for to_node in self.time_to_open_valve[from_node]:
-#             if (
-#                 to_node not in ignore_valves
-#                 and self.time_to_open_valve[from_node][to_node] < time_left
-#             ):
-#                 possible_paths.append(
-#                     (to_node, self.time_to_open_valve[from_node][to_node])
-#                 )
-
-#         return possible_paths
-
-#     def find_optimal_pressure_with_elephant(
-#         self,
-#     ) -> int:
-#         sequences: list[list[tuple[int, list[str]]]] = self.complete_sequence([])
-
-#         open_valves: set[str] = set()
-
-#         return max(self.compute_sequence_pressure(sequence) for sequence in sequences)
+        return optimal_pressure
 
 
 def parse_valve_node(line: str) -> ValveNode:
@@ -331,22 +217,24 @@ def part_one(problem_input: list[str]) -> int:
     return graph.find_optimal_pressure()
 
 
-# def part_two(problem_input: list[str]) -> int:
-#     graph = ValveGraph()
+def part_two(problem_input: list[str]) -> int:
+    graph = ValveGraph()
 
-#     for line in problem_input:
-#         node = parse_valve_node(line)
-#         graph.add_node(node)
+    for line in problem_input:
+        node = parse_valve_node(line)
+        graph.add_node(node)
 
-#     graph.compute_distances()
-#     solver = DoubleWalkValveSolver(graph)
+    graph.compute_distances()
+    print(graph.nodes)
+    print(graph.path_to_valve)
+    solver = DoubleWalkValveSolver(graph)
 
-#     return solver.find_optimal_pressure_with_elephant()
+    return solver.find_optimal_pressure_with_elephant(26)
 
 
 if __name__ == "__main__":
     with open(Path(__file__).with_suffix(".input.txt"), "r", encoding="utf-8") as file:
         problem_input = [line.rstrip() for line in file]
 
-    print("Part One: ", part_one(problem_input))
-    # print("Part Two: ", part_two(problem_input))
+    # print("Part One: ", part_one(problem_input))
+    print("Part Two: ", part_two(problem_input))
