@@ -1,70 +1,64 @@
+import math
 import re
 from pathlib import Path
+
+part_one_digits = {
+    "1": 1,
+    "2": 2,
+    "3": 3,
+    "4": 4,
+    "5": 5,
+    "6": 6,
+    "7": 7,
+    "8": 8,
+    "9": 9,
+}
+part_two_digits = dict(
+    {
+        "one": 1,
+        "two": 2,
+        "three": 3,
+        "four": 4,
+        "five": 5,
+        "six": 6,
+        "seven": 7,
+        "eight": 8,
+        "nine": 9,
+    },
+    **part_one_digits
+)
 
 
 def part_one(problem_input: list[str]) -> int:
     sum = 0
 
     for line in problem_input:
-        x, y = None, None
-        for c in line:
-            if c.isnumeric():
-                if x is None:
-                    x = int(c)
-                    y = int(c)
-                else:
-                    y = int(c)
-        if x is None or y is None:
-            raise ValueError(line)
-        sum += x * 10 + y
+        _, first = min(
+            ((line.find(key), part_one_digits[key]) for key in part_one_digits),
+            key=lambda digit_pair: digit_pair[0] if digit_pair[0] != -1 else math.inf,
+        )
+        _, last = max(
+            ((line.rfind(key), part_one_digits[key]) for key in part_one_digits),
+            key=lambda digit_pair: digit_pair[0],
+        )
+        sum += first * 10 + last
 
     return sum
-
-
-map = {
-    "one": 1,
-    "two": 2,
-    "three": 3,
-    "four": 4,
-    "five": 5,
-    "six": 6,
-    "seven": 7,
-    "eight": 8,
-    "nine": 9,
-}
 
 
 def part_two(problem_input: list[str]) -> int:
     sum = 0
 
     for line in problem_input:
-        replaced_line = ""
-        buffer = ""
-        for c in line:
-            if c.isalpha():
-                buffer += c
-            else:
-                replaced_line += buffer
-                replaced_line += c
-                buffer = c
-            if buffer:
-                for key in map.keys():
-                    if buffer.endswith(key):
-                        replaced_line += buffer.removesuffix(key) + str(map[key])
-                        buffer = c
-        replaced_line += buffer
-
-        x, y = None, None
-        for c in replaced_line:
-            if c.isnumeric():
-                if x is None:
-                    x = int(c)
-                    y = int(c)
-                else:
-                    y = int(c)
-        if x is None or y is None:
-            raise ValueError(replaced_line)
-        sum += x * 10 + y
+        _, first = min(
+            ((line.find(key), part_two_digits[key]) for key in part_two_digits),
+            key=lambda digit_pair: digit_pair[0] if digit_pair[0] != -1 else math.inf,
+        )
+        _, last = max(
+            ((line.rfind(key), part_two_digits[key]) for key in part_two_digits),
+            key=lambda digit_pair: digit_pair[0],
+        )
+        sum += first * 10 + last
 
     return sum
 
