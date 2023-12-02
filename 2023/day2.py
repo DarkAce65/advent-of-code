@@ -2,11 +2,6 @@ import re
 from pathlib import Path
 
 
-def make_cube_pair(cube_pair: str) -> tuple[int, str]:
-    num, color = cube_pair.strip().split(" ")
-    return (int(num), color)
-
-
 class Game:
     id: int
     rounds: list[dict[str, int]]
@@ -14,6 +9,7 @@ class Game:
     def __init__(self, game_str: str) -> None:
         match = re.match(r"Game (\d+): (.*)", game_str)
         assert match is not None
+
         self.id = int(match.group(1))
         self.rounds = []
         for round_str in match.group(2).split(";"):
@@ -24,9 +20,9 @@ class Game:
             self.rounds.append(round)
 
     def compute_power(self) -> int:
-        red = max((round["red"] if "red" in round else 0) for round in self.rounds)
-        green = max((round["green"] if "green" in round else 0) for round in self.rounds)
-        blue = max((round["blue"] if "blue" in round else 0) for round in self.rounds)
+        red = max(round.get("red", 0) for round in self.rounds)
+        green = max(round.get("green", 0) for round in self.rounds)
+        blue = max(round.get("blue", 0) for round in self.rounds)
 
         return red * green * blue
 
@@ -36,9 +32,9 @@ def part_one(games: list[Game]) -> int:
     sum = 0
     for game in games:
         if all(
-            ("red" not in round or round["red"] <= 12)
-            and ("green" not in round or round["green"] <= 13)
-            and ("blue" not in round or round["blue"] <= 14)
+            round.get("red", 0) <= 12
+            and round.get("green", 0) <= 13
+            and round.get("blue", 0) <= 14
             for round in game.rounds
         ):
             sum += game.id
@@ -54,9 +50,7 @@ if __name__ == "__main__":
     with open(Path(__file__).with_suffix(".input.txt"), "r", encoding="utf-8") as file:
         problem_input = [line.rstrip() for line in file]
 
-    games = []
-    for game in problem_input:
-        games.append(Game(game))
+    games = [Game(game_str) for game_str in problem_input]
 
     print("Part One: ", part_one(games))
     print("Part Two: ", part_two(games))
