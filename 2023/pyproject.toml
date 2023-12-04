@@ -5,7 +5,7 @@ description = ""
 authors = ["DarkAce65 <tvdood99@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.11"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.11.0"
@@ -34,7 +34,6 @@ pre_format = "isort ."
 format = "black ."
 pre_lint = "task format"
 lint = "mypy ."
-pre_run = "task lint"
 run = "python"
 
 [build-system]
