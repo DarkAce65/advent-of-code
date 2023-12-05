@@ -23,37 +23,37 @@ class Almanac:
         line_index = 0
         while line_index < len(almanac):
             line = almanac[line_index]
-            list = None
+            mapping = None
             if line.startswith("seed-to-soil"):
-                list = self.seedToSoil
+                mapping = self.seedToSoil
             elif line.startswith("soil-to-fertilizer"):
-                list = self.soilToFertilizer
+                mapping = self.soilToFertilizer
             elif line.startswith("fertilizer-to-water"):
-                list = self.fertilizerToWater
+                mapping = self.fertilizerToWater
             elif line.startswith("water-to-light"):
-                list = self.waterToLight
+                mapping = self.waterToLight
             elif line.startswith("light-to-temperature"):
-                list = self.lightToTemperature
+                mapping = self.lightToTemperature
             elif line.startswith("temperature-to-humidity"):
-                list = self.temperatureToHumidity
+                mapping = self.temperatureToHumidity
             elif line.startswith("humidity-to-location"):
-                list = self.humidityToLocation
+                mapping = self.humidityToLocation
 
-            if list is not None:
+            if mapping is not None:
                 line_index += 1
                 line = almanac[line_index]
                 while line != "":
                     dest, source, range = line.split()
-                    list.append((int(dest), int(source), int(range)))
+                    mapping.append((int(dest), int(source), int(range)))
                     line_index += 1
                     if line_index >= len(almanac):
                         break
                     line = almanac[line_index]
-                list.sort(key=lambda t: t[0])
+                mapping.sort(key=lambda t: t[0])
             else:
                 line_index += 1
 
-    def get_can_skip_to_next_edge(
+    def get_distance_to_next_edge(
         self,
         type: Literal["seed"]
         | Literal["soil"]
@@ -124,16 +124,16 @@ class Almanac:
                 output_location = location + output_humidity - humidity
                 break
 
-        can_skip = min(
-            self.get_can_skip_to_next_edge("seed", input_seed),
-            self.get_can_skip_to_next_edge("soil", output_soil),
-            self.get_can_skip_to_next_edge("fertilizer", output_fertilizer),
-            self.get_can_skip_to_next_edge("water", output_water),
-            self.get_can_skip_to_next_edge("light", output_light),
-            self.get_can_skip_to_next_edge("temperature", output_temperature),
-            self.get_can_skip_to_next_edge("humidity", output_humidity),
+        seeds_to_skip = min(
+            self.get_distance_to_next_edge("seed", input_seed),
+            self.get_distance_to_next_edge("soil", output_soil),
+            self.get_distance_to_next_edge("fertilizer", output_fertilizer),
+            self.get_distance_to_next_edge("water", output_water),
+            self.get_distance_to_next_edge("light", output_light),
+            self.get_distance_to_next_edge("temperature", output_temperature),
+            self.get_distance_to_next_edge("humidity", output_humidity),
         )
-        return (output_location, can_skip)
+        return (output_location, seeds_to_skip)
 
 
 def part_one(problem_input: list[str], almanac: Almanac) -> int:
@@ -153,12 +153,12 @@ def part_two(problem_input: list[str], almanac: Almanac) -> int:
 
         input_seed = seed
         while input_seed < seed + seed_range:
-            location_number, can_skip = almanac.get_location_number(input_seed)
+            location_number, seeds_to_skip = almanac.get_location_number(input_seed)
             if min_location is None or location_number < min_location:
                 min_location = location_number
 
-            if can_skip > 0:
-                input_seed += can_skip
+            if seeds_to_skip > 0:
+                input_seed += seeds_to_skip
             else:
                 input_seed += 1
 
