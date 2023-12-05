@@ -1,5 +1,5 @@
-import math
 from pathlib import Path
+from typing import Literal
 
 
 class Almanac:
@@ -53,52 +53,86 @@ class Almanac:
             else:
                 line_index += 1
 
-    def get_location_number(self, input_seed: int) -> tuple[int, int]:
-        can_skip = 0
+    def get_can_skip_to_next_edge(
+        self,
+        type: Literal["seed"]
+        | Literal["soil"]
+        | Literal["fertilizer"]
+        | Literal["water"]
+        | Literal["light"]
+        | Literal["temperature"]
+        | Literal["humidity"],
+        value: int,
+    ) -> int:
+        if type == "seed":
+            mapping = self.seedToSoil
+        elif type == "soil":
+            mapping = self.soilToFertilizer
+        elif type == "fertilizer":
+            mapping = self.fertilizerToWater
+        elif type == "water":
+            mapping = self.waterToLight
+        elif type == "light":
+            mapping = self.lightToTemperature
+        elif type == "temperature":
+            mapping = self.temperatureToHumidity
+        elif type == "humidity":
+            mapping = self.humidityToLocation
 
+        for _, range_start, range in mapping:
+            if value < range_start:
+                return range_start - value
+            elif range_start <= value < range_start + range:
+                return range_start + range - value
+
+        return 0
+
+    def get_location_number(self, input_seed: int) -> tuple[int, int]:
         output_soil = input_seed
         for soil, seed, range in self.seedToSoil:
             if seed <= input_seed < seed + range:
                 output_soil = soil + input_seed - seed
-                can_skip = seed + range - input_seed
                 break
         output_fertilizer = output_soil
         for fertilizer, soil, range in self.soilToFertilizer:
             if soil <= output_soil < soil + range:
                 output_fertilizer = fertilizer + output_soil - soil
-                can_skip = min(can_skip, soil + range - output_soil)
                 break
         output_water = output_fertilizer
         for water, fertilizer, range in self.fertilizerToWater:
             if fertilizer <= output_fertilizer < fertilizer + range:
                 output_water = water + output_fertilizer - fertilizer
-                can_skip = min(can_skip, fertilizer + range - output_fertilizer)
                 break
         output_light = output_water
         for light, water, range in self.waterToLight:
             if water <= output_water < water + range:
                 output_light = light + output_water - water
-                can_skip = min(can_skip, water + range - output_water)
                 break
         output_temperature = output_light
         for temperature, light, range in self.lightToTemperature:
             if light <= output_light < light + range:
                 output_temperature = temperature + output_light - light
-                can_skip = min(can_skip, light + range - output_light)
                 break
         output_humidity = output_temperature
         for humidity, temperature, range in self.temperatureToHumidity:
             if temperature <= output_temperature < temperature + range:
                 output_humidity = humidity + output_temperature - temperature
-                can_skip = min(can_skip, temperature + range - output_temperature)
                 break
         output_location = output_humidity
         for location, humidity, range in self.humidityToLocation:
             if humidity <= output_humidity < humidity + range:
                 output_location = location + output_humidity - humidity
-                can_skip = min(can_skip, humidity + range - output_humidity)
                 break
 
+        can_skip = min(
+            self.get_can_skip_to_next_edge("seed", input_seed),
+            self.get_can_skip_to_next_edge("soil", output_soil),
+            self.get_can_skip_to_next_edge("fertilizer", output_fertilizer),
+            self.get_can_skip_to_next_edge("water", output_water),
+            self.get_can_skip_to_next_edge("light", output_light),
+            self.get_can_skip_to_next_edge("temperature", output_temperature),
+            self.get_can_skip_to_next_edge("humidity", output_humidity),
+        )
         return (output_location, can_skip)
 
 
@@ -116,14 +150,12 @@ def part_two(problem_input: list[str], almanac: Almanac) -> int:
     for index in range(0, len(seeds), 2):
         seed = seeds[index]
         seed_range = seeds[index + 1]
-        print("new seed range", seed, seed_range)
 
         input_seed = seed
         while input_seed < seed + seed_range:
             location_number, can_skip = almanac.get_location_number(input_seed)
             if min_location is None or location_number < min_location:
                 min_location = location_number
-                print(input_seed, min_location)
 
             if can_skip > 0:
                 input_seed += can_skip
