@@ -3,6 +3,12 @@ import re
 from pathlib import Path
 
 
+def ways_to_win(time: int, distance: int) -> int:
+    x1 = int((time + math.sqrt(time**2 + 4 * -distance)) / 2)
+    x2 = int((time - math.sqrt(time**2 + 4 * -distance)) / 2)
+    return x1 - x2
+
+
 def part_one(problem_input: list[str]) -> int:
     times_and_distances = [
         (int(time), int(distance))
@@ -12,26 +18,16 @@ def part_one(problem_input: list[str]) -> int:
         )
     ]
 
-    ways_to_win = []
-    for time, distance in times_and_distances:
-        ways_to_win.append(0)
-        for charge_time in range(time):
-            if charge_time * (time - charge_time) > distance:
-                ways_to_win[-1] += 1
-
-    return math.prod(ways_to_win)
+    return math.prod(
+        ways_to_win(time, distance) for time, distance in times_and_distances
+    )
 
 
 def part_two(problem_input: list[str]) -> int:
     time = int(re.sub(r"\s+", "", problem_input[0].strip("Time:")))
     distance = int(re.sub(r"\s+", "", problem_input[1].strip("Distance:")))
 
-    ways_to_win = 0
-    for charge_time in range(time):
-        if charge_time * (time - charge_time) > distance:
-            ways_to_win += 1
-
-    return ways_to_win
+    return ways_to_win(time, distance)
 
 
 if __name__ == "__main__":
