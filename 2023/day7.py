@@ -42,49 +42,50 @@ def is_one_pair(cards: Counter[str]) -> bool:
     )
 
 
-def get_hand_type_rank(cards: Counter[str]) -> HandRank:
-    if is_five_of_a_kind(cards):
+def get_hand_rank(cards: str) -> HandRank:
+    card_counts = Counter(cards)
+    if is_five_of_a_kind(card_counts):
         return HandRank.FIVE_OF_A_KIND
-    elif is_four_of_a_kind(cards):
+    elif is_four_of_a_kind(card_counts):
         return HandRank.FOUR_OF_A_KIND
-    elif is_full_house(cards):
+    elif is_full_house(card_counts):
         return HandRank.FULL_HOUSE
-    elif is_three_of_a_kind(cards):
+    elif is_three_of_a_kind(card_counts):
         return HandRank.THREE_OF_A_KIND
-    elif is_two_pair(cards):
+    elif is_two_pair(card_counts):
         return HandRank.TWO_PAIR
-    elif is_one_pair(cards):
+    elif is_one_pair(card_counts):
         return HandRank.ONE_PAIR
     return HandRank.HIGH_CARD
 
 
-def get_hand_type_rank_with_jokers(cards: Counter[str]) -> HandRank:
-    cards = cards.copy()
-    num_jokers = cards["J"]
-    del cards["J"]
+def get_hand_rank_with_jokers(cards: str) -> HandRank:
+    card_counts = Counter(cards)
+    num_jokers = card_counts["J"]
+    del card_counts["J"]
 
     if num_jokers == 5:
         return HandRank.FIVE_OF_A_KIND
 
-    if is_five_of_a_kind(cards):
+    if is_five_of_a_kind(card_counts):
         return HandRank.FIVE_OF_A_KIND
-    elif is_four_of_a_kind(cards):
+    elif is_four_of_a_kind(card_counts):
         if num_jokers == 1:
             return HandRank.FIVE_OF_A_KIND
         return HandRank.FOUR_OF_A_KIND
-    elif is_full_house(cards):
+    elif is_full_house(card_counts):
         return HandRank.FULL_HOUSE
-    elif is_three_of_a_kind(cards):
+    elif is_three_of_a_kind(card_counts):
         if num_jokers == 2:
             return HandRank.FIVE_OF_A_KIND
         elif num_jokers == 1:
             return HandRank.FOUR_OF_A_KIND
         return HandRank.THREE_OF_A_KIND
-    elif is_two_pair(cards):
+    elif is_two_pair(card_counts):
         if num_jokers == 1:
             return HandRank.FULL_HOUSE
         return HandRank.TWO_PAIR
-    elif is_one_pair(cards):
+    elif is_one_pair(card_counts):
         if num_jokers == 3:
             return HandRank.FIVE_OF_A_KIND
         elif num_jokers == 2:
@@ -109,13 +110,10 @@ ranks_with_joker = ["J", "2", "3", "4", "5", "6", "7", "8", "9", "T", "Q", "K", 
 
 
 def compare_hands(first: str, second: str) -> int:
-    first_cards = Counter(first)
-    second_cards = Counter(second)
-
-    first_hand_type_rank = get_hand_type_rank(first_cards)
-    second_hand_type_rank = get_hand_type_rank(second_cards)
-    if first_hand_type_rank != second_hand_type_rank:
-        return first_hand_type_rank.value - second_hand_type_rank.value
+    first_hand_rank = get_hand_rank(first)
+    second_hand_rank = get_hand_rank(second)
+    if first_hand_rank != second_hand_rank:
+        return first_hand_rank.value - second_hand_rank.value
 
     for f, s in zip(first, second):
         diff = ranks.index(f) - ranks.index(s)
@@ -126,13 +124,10 @@ def compare_hands(first: str, second: str) -> int:
 
 
 def compare_hands_with_jokers(first: str, second: str) -> int:
-    first_cards = Counter(first)
-    second_cards = Counter(second)
-
-    first_hand_type_rank = get_hand_type_rank_with_jokers(first_cards)
-    second_hand_type_rank = get_hand_type_rank_with_jokers(second_cards)
-    if first_hand_type_rank != second_hand_type_rank:
-        return first_hand_type_rank.value - second_hand_type_rank.value
+    first_hand_rank = get_hand_rank_with_jokers(first)
+    second_hand_rank = get_hand_rank_with_jokers(second)
+    if first_hand_rank != second_hand_rank:
+        return first_hand_rank.value - second_hand_rank.value
 
     for f, s in zip(first, second):
         diff = ranks_with_joker.index(f) - ranks_with_joker.index(s)
