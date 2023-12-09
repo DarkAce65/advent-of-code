@@ -6,12 +6,15 @@ authors = ["DarkAce65 <tvdood99@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.11"
+python-dotenv = "^1.0.0"
+requests = "^2.31.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.11.0"
 mypy = "^1.7.0"
 isort = "^5.12.0"
 taskipy = "^1.12.0"
+types-requests = "^2.31.0"
 
 [tool.isort]
 profile = "black"
