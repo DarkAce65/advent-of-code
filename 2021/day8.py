@@ -1,5 +1,6 @@
-from pathlib import Path
 from typing import Optional, Tuple, cast
+
+from utils import get_and_cache_input
 
 SEGMENT_MAPPING = {
     "abcefg": 0,
@@ -119,8 +120,7 @@ def parse_entry(entry: str) -> Tuple[list[str], list[str]]:
 
 
 if __name__ == "__main__":
-    with open(Path(__file__).stem + ".input.txt", "r", encoding="utf-8") as file:
-        problem_input = [line.rstrip() for line in file]
+    problem_input = get_and_cache_input(__file__)
 
     parsed_display_log = list(map(parse_entry, problem_input))
 

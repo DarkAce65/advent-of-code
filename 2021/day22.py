@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import functools
-from pathlib import Path
 from typing import Iterable
+
+from utils import get_and_cache_input
 
 
 class Cuboid:
@@ -110,7 +111,7 @@ def parse_instructions(problem_input: Iterable[str]) -> list[Instruction]:
 
 def part_one(instructions: list[Instruction]) -> int:
     enabled_cubes: set[tuple[int, int, int]] = set()
-    for (should_enable, cuboid) in instructions:
+    for should_enable, cuboid in instructions:
         (x_low, x_high) = cuboid.x_bounds
         (y_low, y_high) = cuboid.y_bounds
         (z_low, z_high) = cuboid.z_bounds
@@ -142,7 +143,7 @@ def part_one(instructions: list[Instruction]) -> int:
 
 def part_two(instructions: list[Instruction]) -> int:
     enabled_cuboids: list[Cuboid] = []
-    for (should_enable, cuboid) in instructions:
+    for should_enable, cuboid in instructions:
         if should_enable:
             cuboids_to_add = [cuboid]
             for enabled_cuboid in enabled_cuboids:
@@ -161,8 +162,7 @@ def part_two(instructions: list[Instruction]) -> int:
 
 
 if __name__ == "__main__":
-    with open(Path(__file__).stem + ".input.txt", "r", encoding="utf-8") as file:
-        problem_input = [line.rstrip() for line in file]
+    problem_input = get_and_cache_input(__file__)
 
     instructions = parse_instructions(filter(None, problem_input))
 

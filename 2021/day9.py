@@ -1,7 +1,8 @@
 import copy
 import math
-from pathlib import Path
 from typing import Optional, TypedDict
+
+from utils import get_and_cache_input
 
 
 def is_low_point(heightmap: list[list[int]], row: int, col: int) -> bool:
@@ -64,8 +65,7 @@ def part_two(heightmap: list[list[int]]) -> int:
 
 
 if __name__ == "__main__":
-    with open(Path(__file__).stem + ".input.txt", "r", encoding="utf-8") as file:
-        problem_input = [line.rstrip() for line in file]
+    problem_input = get_and_cache_input(__file__)
 
     heightmap = [list(map(int, row)) for row in problem_input]
 

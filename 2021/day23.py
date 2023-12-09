@@ -1,7 +1,8 @@
 import copy
 import itertools
-from pathlib import Path
 from typing import Iterable, Iterator, Optional, Sequence, TypeVar
+
+from utils import get_and_cache_input
 
 ROOM_INDEX_TO_AMPHIPOD = {0: "A", 1: "B", 2: "C", 3: "D"}
 AMPHIPOD_TO_ROOM_INDEX = {v: k for k, v in ROOM_INDEX_TO_AMPHIPOD.items()}
@@ -194,7 +195,7 @@ def compute_best_energy_cost(burrow_str: str) -> Optional[int]:
             break
 
     lowest_cost: Optional[int] = None
-    for (next_state, cost) in next_states:
+    for next_state, cost in next_states:
         cost_to_organize = compute_best_energy_cost(next_state)
         if cost_to_organize is not None and (
             lowest_cost is None or cost + cost_to_organize < lowest_cost
@@ -226,8 +227,7 @@ def part_two(problem_input: list[str]) -> int:
 
 
 if __name__ == "__main__":
-    with open(Path(__file__).stem + ".input.txt", "r", encoding="utf-8") as file:
-        problem_input = [line.rstrip() for line in file]
+    problem_input = get_and_cache_input(__file__)
 
     print("Part One: ", part_one(problem_input))
     print("Part Two: ", part_two(problem_input))

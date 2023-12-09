@@ -1,5 +1,6 @@
 import re
-from pathlib import Path
+
+from utils import get_and_cache_input
 
 
 class Game:
@@ -47,8 +48,7 @@ def part_two(games: list[Game]) -> int:
 
 
 if __name__ == "__main__":
-    with open(Path(__file__).with_suffix(".input.txt"), "r", encoding="utf-8") as file:
-        problem_input = [line.rstrip() for line in file]
+    problem_input = get_and_cache_input(__file__)
 
     games = [Game(game_str) for game_str in problem_input]
 

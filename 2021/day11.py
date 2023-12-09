@@ -1,5 +1,6 @@
 import copy
-from pathlib import Path
+
+from utils import get_and_cache_input
 
 
 def ripple(energy_levels: list[list[int]], row: int, col: int) -> None:
@@ -51,8 +52,7 @@ def part_two(initial_energy_levels: list[list[int]]) -> int:
 
 
 if __name__ == "__main__":
-    with open(Path(__file__).stem + ".input.txt", "r", encoding="utf-8") as file:
-        problem_input = [line.rstrip() for line in file]
+    problem_input = get_and_cache_input(__file__)
 
     initial_energy_levels = [list(map(int, row)) for row in problem_input]
 

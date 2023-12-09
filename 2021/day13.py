@@ -1,5 +1,6 @@
-from pathlib import Path
 from typing import Tuple
+
+from utils import get_and_cache_input
 
 
 class TransparentPaper:
@@ -74,8 +75,7 @@ def part_two(paper: TransparentPaper, instructions: list[str]) -> str:
 
 
 if __name__ == "__main__":
-    with open(Path(__file__).stem + ".input.txt", "r", encoding="utf-8") as file:
-        problem_input = [line.rstrip() for line in file]
+    problem_input = get_and_cache_input(__file__)
 
     dots = []
     instructions = []

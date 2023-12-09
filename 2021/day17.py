@@ -1,6 +1,7 @@
 import math
-from pathlib import Path
 from typing import Optional
+
+from utils import get_and_cache_input
 
 
 def sign(a: int) -> int:
@@ -9,7 +10,7 @@ def sign(a: int) -> int:
 
 def is_perfect_square(a: int) -> bool:
     root = int(math.sqrt(a))
-    return root ** 2 == a
+    return root**2 == a
 
 
 def parse_target_area(input_str: str) -> tuple[tuple[int, int], tuple[int, int]]:
@@ -76,7 +77,7 @@ def part_one(target_area: tuple[tuple[int, int], tuple[int, int]]) -> int:
     target_steps = None
 
     y_candidates = get_y_candidates(min_y, max_y)
-    for (y_candidate, steps) in y_candidates:
+    for y_candidate, steps in y_candidates:
         x_candidate = get_tail_x_candidate(min_x, max_x, steps)
         if x_candidate is not None:
             velocity = (x_candidate, y_candidate)
@@ -107,7 +108,7 @@ def part_two(target_area: tuple[tuple[int, int], tuple[int, int]]) -> int:
     velocities = set()
 
     y_candidates = get_y_candidates(min_y, max_y)
-    for (y_candidate, steps) in y_candidates:
+    for y_candidate, steps in y_candidates:
         x_candidates = get_x_values(min_x, max_x, y_candidate, steps)
         for x in x_candidates:
             velocities.add((x, y_candidate))
@@ -116,8 +117,7 @@ def part_two(target_area: tuple[tuple[int, int], tuple[int, int]]) -> int:
 
 
 if __name__ == "__main__":
-    with open(Path(__file__).stem + ".input.txt", "r", encoding="utf-8") as file:
-        problem_input = [line.rstrip() for line in file]
+    problem_input = get_and_cache_input(__file__)
 
     target_area = parse_target_area(problem_input[0])
 

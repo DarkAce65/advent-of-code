@@ -1,5 +1,6 @@
 from collections import deque
-from pathlib import Path
+
+from utils import get_and_cache_input
 
 
 def part_one(digit_candidates: list[set[int]]) -> int:
@@ -19,8 +20,7 @@ def part_two(digit_candidates: list[set[int]]) -> int:
 
 
 if __name__ == "__main__":
-    with open(Path(__file__).stem + ".input.txt", "r", encoding="utf-8") as file:
-        problem_input = [line.rstrip() for line in file]
+    problem_input = get_and_cache_input(__file__)
 
     a_values = [1, 1, 1, 1, 26, 1, 26, 26, 1, 26, 1, 26, 26, 26]
     b_values = [10, 15, 14, 15, -8, 10, -16, -4, 11, -3, 12, -7, -15, -7]

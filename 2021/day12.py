@@ -1,6 +1,7 @@
 from collections import defaultdict
 from enum import Enum, unique
-from pathlib import Path
+
+from utils import get_and_cache_input
 
 
 @unique
@@ -116,8 +117,7 @@ def part_two(cave_graph: CaveGraph) -> int:
 
 
 if __name__ == "__main__":
-    with open(Path(__file__).stem + ".input.txt", "r", encoding="utf-8") as file:
-        problem_input = [line.rstrip() for line in file]
+    problem_input = get_and_cache_input(__file__)
 
     cave_graph = CaveGraph(problem_input)
 

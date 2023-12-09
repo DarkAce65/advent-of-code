@@ -1,5 +1,6 @@
 import statistics
-from pathlib import Path
+
+from utils import get_and_cache_input
 
 
 def part_one(crab_positions: list[int]) -> int:
@@ -45,8 +46,7 @@ def part_two(crab_positions: list[int]) -> int:
 
 
 if __name__ == "__main__":
-    with open(Path(__file__).stem + ".input.txt", "r", encoding="utf-8") as file:
-        problem_input = [line.rstrip() for line in file]
+    problem_input = get_and_cache_input(__file__)
 
     crab_positions = list(map(int, problem_input[0].split(",")))
 

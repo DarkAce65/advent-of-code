@@ -1,6 +1,7 @@
 import math
 import re
-from pathlib import Path
+
+from utils import get_and_cache_input
 
 
 def ways_to_win(time: int, distance: int) -> int:
@@ -31,8 +32,7 @@ def part_two(problem_input: list[str]) -> int:
 
 
 if __name__ == "__main__":
-    with open(Path(__file__).with_suffix(".input.txt"), "r", encoding="utf-8") as file:
-        problem_input = [line.rstrip() for line in file]
+    problem_input = get_and_cache_input(__file__)
 
     print("Part One: ", part_one(problem_input))
     print("Part Two: ", part_two(problem_input))

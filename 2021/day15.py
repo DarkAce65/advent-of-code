@@ -1,8 +1,8 @@
-import copy
 import heapq
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Tuple
+
+from utils import get_and_cache_input
 
 
 @dataclass(order=True)
@@ -71,8 +71,7 @@ def part_two(grid: list[list[int]]) -> int:
 
 
 if __name__ == "__main__":
-    with open(Path(__file__).stem + ".input.txt", "r", encoding="utf-8") as file:
-        problem_input = [line.rstrip() for line in file]
+    problem_input = get_and_cache_input(__file__)
 
     grid = [list(map(int, line)) for line in problem_input]
 

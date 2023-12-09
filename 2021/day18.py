@@ -1,8 +1,9 @@
 import json
 import math
 import re
-from pathlib import Path
 from typing import Any
+
+from utils import get_and_cache_input
 
 
 def reduce_number(snailfish_number: str) -> str:
@@ -108,8 +109,7 @@ def part_two(snailfish_numbers: list[str]) -> int:
 
 
 if __name__ == "__main__":
-    with open(Path(__file__).stem + ".input.txt", "r", encoding="utf-8") as file:
-        problem_input = [line.rstrip() for line in file]
+    problem_input = get_and_cache_input(__file__)
 
     print("Part One: ", part_one(problem_input))
     print("Part Two: ", part_two(problem_input))

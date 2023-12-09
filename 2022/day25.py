@@ -1,4 +1,4 @@
-from pathlib import Path
+from utils import get_and_cache_input
 
 
 def snafu_digit_to_decimal(snafu_digit: str) -> int:
@@ -53,7 +53,6 @@ def part_one(problem_input: list[str]) -> str:
 
 
 if __name__ == "__main__":
-    with open(Path(__file__).with_suffix(".input.txt"), "r", encoding="utf-8") as file:
-        problem_input = [line.rstrip() for line in file]
+    problem_input = get_and_cache_input(__file__)
 
     print("Part One: ", part_one(problem_input))

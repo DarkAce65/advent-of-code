@@ -1,5 +1,6 @@
-from pathlib import Path
 from typing import Optional
+
+from utils import get_and_cache_input
 
 
 class InfiniteImage:
@@ -117,8 +118,7 @@ def part_two(image_enhancement_algorithm: str, input_image: list[str]) -> int:
 
 
 if __name__ == "__main__":
-    with open(Path(__file__).stem + ".input.txt", "r", encoding="utf-8") as file:
-        problem_input = [line.rstrip() for line in file]
+    problem_input = get_and_cache_input(__file__)
 
     image_enhancement_algorithm = problem_input[0]
     input_image = list(filter(None, problem_input[1:]))

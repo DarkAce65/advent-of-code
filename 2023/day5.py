@@ -1,5 +1,6 @@
-from pathlib import Path
 from typing import Literal
+
+from utils import get_and_cache_input
 
 
 class Almanac:
@@ -167,8 +168,7 @@ def part_two(problem_input: list[str], almanac: Almanac) -> int:
 
 
 if __name__ == "__main__":
-    with open(Path(__file__).with_suffix(".input.txt"), "r", encoding="utf-8") as file:
-        problem_input = [line.rstrip() for line in file]
+    problem_input = get_and_cache_input(__file__)
 
     almanac = Almanac(problem_input)
     print("Part One: ", part_one(problem_input, almanac))

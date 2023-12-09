@@ -1,5 +1,6 @@
 from collections import defaultdict
-from pathlib import Path
+
+from utils import get_and_cache_input
 
 
 def part_one(initial_state: list[int]) -> int:
@@ -38,8 +39,7 @@ def part_two(initial_state: list[int]) -> int:
 
 
 if __name__ == "__main__":
-    with open(Path(__file__).stem + ".input.txt", "r", encoding="utf-8") as file:
-        problem_input = [line.rstrip() for line in file]
+    problem_input = get_and_cache_input(__file__)
 
     fish_timers = list(map(int, problem_input[0].split(",")))
 

@@ -3,8 +3,9 @@ from __future__ import annotations
 from collections import deque
 from dataclasses import dataclass
 from enum import Enum, unique
-from pathlib import Path
 from typing import Optional
+
+from utils import get_and_cache_input
 
 
 @unique
@@ -286,8 +287,8 @@ def part_one(beacons: set[Vector3]) -> int:
 
 def part_two(scanner_positions: dict[int, tuple[Vector3, Orientation]]) -> int:
     farthest_distance = 0
-    for (scanner_num1, (scanner_position1, _)) in scanner_positions.items():
-        for (scanner_num2, (scanner_position2, _)) in scanner_positions.items():
+    for scanner_num1, (scanner_position1, _) in scanner_positions.items():
+        for scanner_num2, (scanner_position2, _) in scanner_positions.items():
             if scanner_num1 == scanner_num2:
                 continue
 
@@ -300,8 +301,7 @@ def part_two(scanner_positions: dict[int, tuple[Vector3, Orientation]]) -> int:
 
 
 if __name__ == "__main__":
-    with open(Path(__file__).stem + ".input.txt", "r", encoding="utf-8") as file:
-        problem_input = [line.rstrip() for line in file]
+    problem_input = get_and_cache_input(__file__)
 
     scanner_report = parse_scanner_report(problem_input)
     (scanner_positions, beacons) = find_scanner_locations_and_all_beacons(scanner_report)

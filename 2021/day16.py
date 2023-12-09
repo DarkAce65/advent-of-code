@@ -1,6 +1,7 @@
 from abc import ABC
-from pathlib import Path
 from typing import Optional
+
+from utils import get_and_cache_input
 
 HEX_TO_BINARY = {
     "0": "0000",
@@ -163,8 +164,7 @@ def part_two(packet: Packet) -> int:
 
 
 if __name__ == "__main__":
-    with open(Path(__file__).stem + ".input.txt", "r", encoding="utf-8") as file:
-        problem_input = [line.rstrip() for line in file]
+    problem_input = get_and_cache_input(__file__)
 
     (packet, _) = parse_packet(convert_hex_to_binary(problem_input[0]))
 
