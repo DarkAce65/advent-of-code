@@ -157,6 +157,8 @@ def part_two(problem_input: list[str]) -> int:
             inside_positions.update(positions)
         else:
             outside_positions.update(positions)
+        to_visit.difference_update(positions)
+
     return len(non_path_scaled.intersection(inside_positions))
 
 
