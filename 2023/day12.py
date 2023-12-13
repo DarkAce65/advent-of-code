@@ -1,4 +1,5 @@
 from functools import lru_cache
+
 from utils import get_and_cache_input
 
 
