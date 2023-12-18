@@ -1,8 +1,6 @@
 from enum import Enum
-from functools import lru_cache
-from typing import Literal
-from utils import get_and_cache_input
 
+from utils import get_and_cache_input
 
 Position = tuple[int, int]
 
