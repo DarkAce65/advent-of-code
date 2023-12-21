@@ -1,9 +1,5 @@
-from __future__ import annotations
-from collections import defaultdict
-from dataclasses import dataclass
 from enum import Enum
 
-from typing import Literal
 from utils import get_and_cache_input
 
 
@@ -25,200 +21,129 @@ Position = tuple[int, int]
 Heading = tuple[Direction, int]
 
 
-@dataclass(frozen=True)
-class State:
-    heat_loss: int
-    heading: Heading
+def get_next_positions_and_headings(
+    position: Position,
+    heading: Heading,
+    num_rows: int,
+    num_cols: int,
+    min_movement=0,
+    max_movement=3,
+) -> list[tuple[Position, Heading]]:
+    next_positions_and_headings = []
 
-    def compare(self, other: State, min_movement=0) -> Comparison:
-        if self.heat_loss == other.heat_loss and self.heading == other.heading:
-            return Comparison.EQUAL
-        elif (
-            self.heat_loss <= other.heat_loss
-            and self.heading[0] == other.heading[0]
-            and min_movement <= self.heading[1] <= other.heading[1]
+    if (
+        (heading[0] == Direction.UP and heading[1] < max_movement)
+        or (
+            (heading[0] == Direction.RIGHT or heading[0] == Direction.LEFT)
+            and heading[1] >= min_movement
+        )
+    ) and position[0] > 0:
+        next_position = (position[0] - 1, position[1])
+        next_heading = (
+            Direction.UP,
+            heading[1] + 1 if heading[0] == Direction.UP else 1,
+        )
+        next_positions_and_headings.append((next_position, next_heading))
+    if (
+        (heading[0] == Direction.RIGHT and heading[1] < max_movement)
+        or (
+            (heading[0] == Direction.UP or heading[0] == Direction.DOWN)
+            and heading[1] >= min_movement
+        )
+    ) and position[1] + 1 < num_cols:
+        next_position = (position[0], position[1] + 1)
+        next_heading = (
+            Direction.RIGHT,
+            heading[1] + 1 if heading[0] == Direction.RIGHT else 1,
+        )
+        next_positions_and_headings.append((next_position, next_heading))
+    if (
+        (heading[0] == Direction.DOWN and heading[1] < max_movement)
+        or (
+            (heading[0] == Direction.RIGHT or heading[0] == Direction.LEFT)
+            and heading[1] >= min_movement
+        )
+    ) and position[0] + 1 < num_rows:
+        next_position = (position[0] + 1, position[1])
+        next_heading = (
+            Direction.DOWN,
+            heading[1] + 1 if heading[0] == Direction.DOWN else 1,
+        )
+        next_positions_and_headings.append((next_position, next_heading))
+    if (
+        (heading[0] == Direction.LEFT and heading[1] < max_movement)
+        or (
+            (heading[0] == Direction.UP or heading[0] == Direction.DOWN)
+            and heading[1] >= min_movement
+        )
+    ) and position[1] > 0:
+        next_position = (position[0], position[1] - 1)
+        next_heading = (
+            Direction.LEFT,
+            heading[1] + 1 if heading[0] == Direction.LEFT else 1,
+        )
+        next_positions_and_headings.append((next_position, next_heading))
+
+    return next_positions_and_headings
+
+
+def find_best_path(problem_input: list[str], min_movement: int, max_movement: int) -> int:
+    num_rows = len(problem_input)
+    num_cols = len(problem_input[0])
+    end_position = (num_rows - 1, num_cols - 1)
+
+    iterations = 0
+
+    to_visit: list[tuple[Position, Heading]] = []
+    best_states: dict[tuple[Position, Heading], int] = {}
+
+    to_visit.append(((0, 0), (Direction.RIGHT, 0)))
+    best_states[((0, 0), (Direction.RIGHT, 0))] = 0
+    while len(to_visit) > 0:
+        position, heading = to_visit.pop(0)
+        heat_loss = best_states[(position, heading)]
+
+        if position == end_position or iterations % 100_000 == 0:
+            print(
+                heat_loss,
+                "*" if position == end_position else "",
+                "\t",
+                position,
+                "\t",
+                heading[0].value + " " + str(heading[1]),
+                "\t",
+                len(to_visit),
+            )
+
+        for next_position, next_heading in get_next_positions_and_headings(
+            position, heading, num_rows, num_cols, min_movement, max_movement
         ):
-            return Comparison.BETTER
-        elif (
-            self.heat_loss >= other.heat_loss
-            and self.heading[0] == other.heading[0]
-            and self.heading[1] >= other.heading[1] >= min_movement
+            next_heat_loss = heat_loss + int(
+                problem_input[next_position[0]][next_position[1]]
+            )
+            next_state = (next_position, next_heading)
+            if next_state not in best_states or next_heat_loss < best_states[next_state]:
+                best_states[next_state] = next_heat_loss
+                to_visit.append(next_state)
+        iterations += 1
+
+    best_heat_loss: int | None = None
+    for state in best_states:
+        if state[0] == end_position and (
+            best_heat_loss is None or best_states[state] < best_heat_loss
         ):
-            return Comparison.WORSE
+            best_heat_loss = best_states[state]
+    assert best_heat_loss is not None, "No path found"
 
-        return Comparison.UNKNOWN
-
-    def get_next_positions_and_headings(
-        self,
-        position: Position,
-        num_rows: int,
-        num_cols: int,
-        min_movement=0,
-        max_movement=3,
-    ) -> list[tuple[Position, Heading]]:
-        next_positions_and_headings = []
-
-        if (
-            (self.heading[0] == Direction.UP and self.heading[1] < max_movement)
-            or (
-                (self.heading[0] == Direction.RIGHT or self.heading[0] == Direction.LEFT)
-                and self.heading[1] >= min_movement
-            )
-        ) and position[0] > 0:
-            next_position = (position[0] - 1, position[1])
-            next_heading = (
-                Direction.UP,
-                self.heading[1] + 1 if self.heading[0] == Direction.UP else 1,
-            )
-            next_positions_and_headings.append((next_position, next_heading))
-        if (
-            (self.heading[0] == Direction.RIGHT and self.heading[1] < max_movement)
-            or (
-                (self.heading[0] == Direction.UP or self.heading[0] == Direction.DOWN)
-                and self.heading[1] >= min_movement
-            )
-        ) and position[1] + 1 < num_cols:
-            next_position = (position[0], position[1] + 1)
-            next_heading = (
-                Direction.RIGHT,
-                self.heading[1] + 1 if self.heading[0] == Direction.RIGHT else 1,
-            )
-            next_positions_and_headings.append((next_position, next_heading))
-        if (
-            (self.heading[0] == Direction.DOWN and self.heading[1] < max_movement)
-            or (
-                (self.heading[0] == Direction.RIGHT or self.heading[0] == Direction.LEFT)
-                and self.heading[1] >= min_movement
-            )
-        ) and position[0] + 1 < num_rows:
-            next_position = (position[0] + 1, position[1])
-            next_heading = (
-                Direction.DOWN,
-                self.heading[1] + 1 if self.heading[0] == Direction.DOWN else 1,
-            )
-            next_positions_and_headings.append((next_position, next_heading))
-        if (
-            (self.heading[0] == Direction.LEFT and self.heading[1] < max_movement)
-            or (
-                (self.heading[0] == Direction.UP or self.heading[0] == Direction.DOWN)
-                and self.heading[1] >= min_movement
-            )
-        ) and position[1] > 0:
-            next_position = (position[0], position[1] - 1)
-            next_heading = (
-                Direction.LEFT,
-                self.heading[1] + 1 if self.heading[0] == Direction.LEFT else 1,
-            )
-            next_positions_and_headings.append((next_position, next_heading))
-
-        return next_positions_and_headings
+    return best_heat_loss
 
 
 def part_one(problem_input: list[str]) -> int:
-    num_rows = len(problem_input)
-    num_cols = len(problem_input[0])
-    end_position = (num_rows - 1, num_cols - 1)
-
-    to_visit: set[Position] = set([(0, 0)])
-    best_states: dict[Position, list[State]] = defaultdict(list)
-    best_states[(0, 0)].append(State(0, (Direction.RIGHT, 0)))
-    while len(to_visit) > 0:
-        position = to_visit.pop()
-        states = best_states[position]
-
-        for state in states:
-            for next_position, next_heading in state.get_next_positions_and_headings(
-                position, num_rows, num_cols
-            ):
-                next_heat_loss = state.heat_loss + int(
-                    problem_input[next_position[0]][next_position[1]]
-                )
-                next_state = State(next_heat_loss, next_heading)
-
-                new_states: list[State] = []
-                state_status: Literal["skip", "unknown", "better"] = "unknown"
-                for s in best_states[next_position]:
-                    compare_result = next_state.compare(s)
-                    if (
-                        compare_result == Comparison.EQUAL
-                        or compare_result == Comparison.WORSE
-                    ):
-                        state_status = "skip"
-                        break
-                    elif compare_result == Comparison.BETTER:
-                        state_status = "better"
-                    elif compare_result == Comparison.UNKNOWN:
-                        new_states.append(s)
-
-                if state_status == "skip":
-                    continue
-                else:
-                    new_states.append(next_state)
-
-                best_states[next_position] = new_states
-                to_visit.add(next_position)
-
-    if end_position not in best_states:
-        raise ValueError("No path found")
-
-    return min(state.heat_loss for state in best_states[end_position])
+    return find_best_path(problem_input, 0, 3)
 
 
 def part_two(problem_input: list[str]) -> int:
-    num_rows = len(problem_input)
-    num_cols = len(problem_input[0])
-    end_position = (num_rows - 1, num_cols - 1)
-
-    to_visit: set[Position] = set([(0, 0)])
-    visited_states: set[tuple[Position, State]] = set()
-    best_states: dict[Position, list[State]] = defaultdict(list)
-    best_states[(0, 0)].append(State(0, (Direction.RIGHT, 0)))
-    best_states[(0, 0)].append(State(0, (Direction.DOWN, 0)))
-    while len(to_visit) > 0:
-        position = to_visit.pop()
-        states = best_states[position]
-
-        for state in states:
-            if (position, state) in visited_states:
-                continue
-            visited_states.add((position, state))
-            for next_position, next_heading in state.get_next_positions_and_headings(
-                position, num_rows, num_cols, min_movement=4, max_movement=10
-            ):
-                next_heat_loss = state.heat_loss + int(
-                    problem_input[next_position[0]][next_position[1]]
-                )
-                next_state = State(next_heat_loss, next_heading)
-
-                new_states: list[State] = []
-                state_status: Literal["skip", "unknown", "better"] = "unknown"
-                for s in best_states[next_position]:
-                    compare_result = next_state.compare(s, min_movement=4)
-                    if (
-                        compare_result == Comparison.EQUAL
-                        or compare_result == Comparison.WORSE
-                    ):
-                        state_status = "skip"
-                        break
-                    elif compare_result == Comparison.BETTER:
-                        state_status = "better"
-                    elif compare_result == Comparison.UNKNOWN:
-                        new_states.append(s)
-
-                if state_status == "skip":
-                    continue
-                else:
-                    new_states.append(next_state)
-
-                best_states[next_position] = new_states
-                to_visit.add(next_position)
-
-    if end_position not in best_states:
-        raise ValueError("No path found")
-
-    return min(
-        state.heat_loss for state in best_states[end_position] if state.heading[1] >= 4
-    )
+    return find_best_path(problem_input, 4, 10)
 
 
 if __name__ == "__main__":
