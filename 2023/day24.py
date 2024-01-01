@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Literal, NamedTuple
 
-import matplotlib.pyplot as plt
+from sympy import Symbol, nonlinsolve, symbols
 from utils import get_and_cache_input
 
 
@@ -69,6 +69,22 @@ class Hailstone:
 
         return False
 
+    def make_equation(
+        self,
+        px: Symbol,
+        py: Symbol,
+        pz: Symbol,
+        vx: Symbol,
+        vy: Symbol,
+        vz: Symbol,
+        t: Symbol,
+    ):
+        return [
+            px + vx * t - (self.position.x + self.velocity.x * t),
+            py + vy * t - (self.position.y + self.velocity.y * t),
+            pz + vz * t - (self.position.z + self.velocity.z * t),
+        ]
+
 
 def part_one(hailstones: list[Hailstone]) -> int:
     intersections = 0
@@ -82,30 +98,23 @@ def part_one(hailstones: list[Hailstone]) -> int:
 
 
 def part_two(hailstones: list[Hailstone]) -> int:
-    for h in hailstones[:4]:
-        print(h.get_position_at_t(722824506))
+    equations = []
+    variables = symbols("px, py, pz, vx, vy, vz, t0, t1, t2")
+    px, py, pz, vx, vy, vz, t0, t1, t2 = variables
 
-    return 0
+    equations.extend(hailstones[0].make_equation(px, py, pz, vx, vy, vz, t0))
+    equations.extend(hailstones[1].make_equation(px, py, pz, vx, vy, vz, t1))
+    equations.extend(hailstones[2].make_equation(px, py, pz, vx, vy, vz, t2))
 
-    vectors: list[list[int]] = []
-    for hailstone in hailstones:
-        vectors.append(
-            [
-                hailstone.position.x,
-                hailstone.position.y,
-                hailstone.position.z,
-                hailstone.velocity.x * 100000000000,
-                hailstone.velocity.y * 100000000000,
-                hailstone.velocity.z * 100000000000,
-            ]
-        )
+    solutions = list(nonlinsolve(equations, variables))
+    assert len(solutions) == 1
 
-    X, Y, Z, U, V, W = zip(*vectors)
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection="3d")
-    ax.quiver(X, Y, Z, U, V, W)
-    plt.show()
-    return 0
+    solution = {
+        (variable.name): value
+        for variable, value in zip(variables, next(iter(solutions)))
+    }
+
+    return solution["px"] + solution["py"] + solution["pz"]
 
 
 if __name__ == "__main__":
