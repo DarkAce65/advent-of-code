@@ -26,7 +26,9 @@ def get_and_cache_input(file_path_str: str) -> list[str]:
         cookies={"session": session_token},
     )
     if res.status_code != 200:
-        raise ValueError(f"Failed to retrieve input for year {year}, day {day}")
+        raise ValueError(
+            f"Failed to retrieve input for year {year}, day {day} (status code: {res.status_code})"
+        )
 
     with open(input_file_path, "w+", encoding="utf-8") as file:
         file.write(res.text)
