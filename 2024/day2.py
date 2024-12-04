@@ -39,9 +39,13 @@ def part_one(problem_input: list[str]) -> int:
 
 def part_two(problem_input: list[str]) -> int:
     return sum(
-        1
-        if is_report_safe_ignoring_bad_reading([int(level) for level in report.split()])
-        else 0
+        (
+            1
+            if is_report_safe_ignoring_bad_reading(
+                [int(level) for level in report.split()]
+            )
+            else 0
+        )
         for report in problem_input
     )
 

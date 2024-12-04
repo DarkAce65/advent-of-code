@@ -1,6 +1,6 @@
-from utils import get_and_cache_input
-
 import re
+
+from utils import get_and_cache_input
 
 
 def compute(input: str) -> int:
